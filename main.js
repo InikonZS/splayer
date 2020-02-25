@@ -49,6 +49,7 @@ class board{
             this.entries[i].markd=-1;
             this.mdp=false;
             this.entr=false;
+            
         }    
     }
     setSlc(){
@@ -77,6 +78,8 @@ class spline{
         this.sel=false;
         this.mark=-1;
         this.markd=-1;
+        this.divmark=-1;
+        this.divmarkd=-1;
     }
     fin () {
         var a=new spline();
@@ -103,12 +106,23 @@ class spline{
         }
         
     }
+    checkDivMark(cup){
+        this.divmark=-1;
+        for(let i=1;i<this.points.length;i++){
+            if (getSelMark((this.points[i][0]+this.points[i-1][0])/2,(this.points[i][1]+this.points[i-1][1])/2,cup[0],cup[1])){
+                this.divmark=i;
+                break;
+            }   
+        }
+        
+    }
     render (ctx,cp,cup,ofs){
         //ctx.fillStyle = 'rgb(50, 50, 50)';
         //ctx.fillRect(0, 0, gWindow.canvas.width-1, gWindow.canvas.height-1);
         if (!ofs){ofs=[0,0];}
         this.check(cup);
         this.checkMark(cup);
+        this.checkDivMark(cup);
         if (this.points.length>0){
             
             ctx.beginPath();       // Начинает новый путь
@@ -136,8 +150,9 @@ class spline{
                 var eq=getEq(this.points[i][0],this.points[i][1],this.points[i-1][0],this.points[i-1][1])
                 ctx.fillStyle="rgb(0,0,0)";
                 //if (getSelMark(this.points[i][0],this.points[i][1],cup[0],cup[1])){
-                    //ctx.fillRect(this.points[i][0]-5,this.points[i][1]-5,5,5);
-                //}
+                    if (i==this.divmark){
+                    ctx.fillRect((this.points[i][0]+this.points[i-1][0])/2-3,(this.points[i][1]+this.points[i-1][1])/2-3,3,3);
+                    }
               /*  for (let j=this.points[i-1][0];j<this.points[i][0];j++){
                 ctx.fillRect(j,eq[0]*j+eq[1],3,3);
                 }*/
@@ -166,6 +181,10 @@ function move(e){
         brd.mdp[0]=cx;
         brd.mdp[1]=cy;
     } else{
+
+        
+
+
         if (brd.entr){
             brd.ofs=[cx-brd.ldx,cy-brd.ldy];    
         }
@@ -198,6 +217,21 @@ function down(e){
         
         spl=new spline();
         brd.setSlc();
+
+        if (brd.entr){
+            if (brd.entr.divmark!=-1){
+                let zv=brd.entr.divmark;
+                let pn=[];
+                for (let i=0;i<brd.entr.points.length;i++){
+                    
+                    if (i==zv){
+                        pn.push([(brd.entr.points[i][0]+brd.entr.points[i-1][0])/2,(brd.entr.points[i][1]+brd.entr.points[i-1][1])/2]);
+                    }
+                    pn.push(brd.entr.points[i])
+                }
+                brd.entr.points=pn;
+            }
+        }
     }
     clear(gWindow);
     brd.render(gWindow,[cx,cy]);
