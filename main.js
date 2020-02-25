@@ -38,12 +38,17 @@ class board{
     constructor (){
         this.entries=[];
         this.mdp=false;
+        this.entr=false;
+        this.ofs=false;
+        this.ldx=0;
+        this.ldy=0;
     }
     resetSlc(){
         for(let i=0;i<this.entries.length;i++){
             this.entries[i].slc=false;
             this.entries[i].markd=-1;
             this.mdp=false;
+            this.entr=false;
         }    
     }
     setSlc(){
@@ -52,6 +57,7 @@ class board{
             if (this.entries[i].sel==true){
                 this.entries[i].markd=this.entries[i].mark;
                 this.mdp=this.entries[i].points[this.entries[i].markd];
+                this.entr=this.entries[i];
                 return this.entries[i];
             }
         }    
@@ -60,7 +66,7 @@ class board{
         for(let i=0;i<this.entries.length;i++){
             this.entries[i].render(ctx,false,cup);
         }
-    
+        if (this.entr){this.entr.render(ctx,false,cup,this.ofs);}
     }
 }
 
@@ -97,27 +103,36 @@ class spline{
         }
         
     }
-    render (ctx,cp,cup){
+    render (ctx,cp,cup,ofs){
         //ctx.fillStyle = 'rgb(50, 50, 50)';
         //ctx.fillRect(0, 0, gWindow.canvas.width-1, gWindow.canvas.height-1);
+        if (!ofs){ofs=[0,0];}
         this.check(cup);
         this.checkMark(cup);
         if (this.points.length>0){
             
             ctx.beginPath();       // Начинает новый путь
-            ctx.moveTo(this.points[0][0], this.points[0][1]);    // Рередвигает перо в точку (30, 50)
+            ctx.moveTo(this.points[0][0]+ofs[0], this.points[0][1]+ofs[1]);    // Рередвигает перо в точку (30, 50)
             if (this.slc==true) {
                 ctx.strokeStyle="rgb(255,0,0)";
                 for(let i=0;i<this.points.length;i++){
                     if (i==this.mark){ctx.fillStyle="rgb(0,255,0)";}else{
                     ctx.fillStyle="rgb(0,0,0)";}
-                    ctx.fillRect(this.points[i][0]-5,this.points[i][1]-5,5,5);    
+                    ctx.fillRect(this.points[i][0]-5+ofs[0],this.points[i][1]+ofs[1]-5,5,5);    
                 }
-            } else {ctx.strokeStyle="rgb(0,0,0)";}
+            } else 
+            {
+                if (this.sel==true){
+                ctx.strokeStyle="rgb(100,0,0)";    
+                }
+                else{
+                ctx.strokeStyle="rgb(0,0,0)";
+                }
+            }
             
             for(let i=1;i<this.points.length;i++){
                 
-                ctx.lineTo(this.points[i][0], this.points[i][1]);  // Рисует линию до точки (150, 100)
+                ctx.lineTo(this.points[i][0]+ofs[0], this.points[i][1]+ofs[1]);  // Рисует линию до точки (150, 100)
                 var eq=getEq(this.points[i][0],this.points[i][1],this.points[i-1][0],this.points[i-1][1])
                 ctx.fillStyle="rgb(0,0,0)";
                 //if (getSelMark(this.points[i][0],this.points[i][1],cup[0],cup[1])){
@@ -150,6 +165,10 @@ function move(e){
     if (brd.mdp){
         brd.mdp[0]=cx;
         brd.mdp[1]=cy;
+    } else{
+        if (brd.entr){
+            brd.ofs=[cx-brd.ldx,cy-brd.ldy];    
+        }
     }
     clear(gWindow);
 
@@ -163,16 +182,20 @@ function move(e){
 }
 function down(e){
     brd.resetSlc();
+    var cx = e.pageX - gWd.offsetLeft;
+    var cy = e.pageY - gWd.offsetTop;
     if (e.buttons==1){
-        var cx = e.pageX - gWd.offsetLeft;
-        var cy = e.pageY - gWd.offsetTop;
+        
         //if (e.buttons==1){
         spl.points.push([cx,cy]);
     }
     if (e.buttons==2){
         //brd.entries.push(spl);
-        
+        brd.ldx=cx;
+        brd.ldy=cy;
+        brd.ofs=[0,0];
         brd.entries.push(spl.fin());
+        
         spl=new spline();
         brd.setSlc();
     }
@@ -182,6 +205,18 @@ function down(e){
     //}    
 }
 
-function up(){
+function up(e){
+    var cx = e.pageX - gWd.offsetLeft;
+    var cy = e.pageY - gWd.offsetTop;
     brd.mdp=false;
+    if (brd.entr){
+    for (let i=0;i<brd.entr.points.length;i++){
+        brd.entr.points[i][0]=brd.entr.points[i][0]+brd.ofs[0];
+        brd.entr.points[i][1]=brd.entr.points[i][1]+brd.ofs[1];
+    }
+    }
+    brd.entr=false;
+    clear(gWindow);
+    brd.render(gWindow,[cx,cy]);
+    spl.render(gWindow,[cx,cy],[cx,cy]);
 }
