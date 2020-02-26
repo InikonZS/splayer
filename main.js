@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', onReady);
 document.addEventListener('mousemove', move);
 document.addEventListener('mousedown', down);
 document.addEventListener('mouseup', up);
+document.addEventListener('keyup', key);
 var gWd;
 var gWindow;
 function getDist(x1,y1,x2,y2){
@@ -20,15 +21,21 @@ function getSel(x1,y1,x2,y2,x3,y3){
     var b=-1;
     var c=kx[1];
     var dist=Math.abs(a*x3+b*y3+c)/(Math.sqrt(a*a+b*b));
-    var bou=((x3<=x1)&&(x3>x2)&&(y3<=y1)&&(y3>y2)||
+   /* var bou=((x3<=x1)&&(x3>x2)&&(y3<=y1)&&(y3>y2)||
             (x3>x1)&&(x3<=x2)&&(y3<=y1)&&(y3>y2)||
             (x3<=x1)&&(x3>x2)&&(y3>y1)&&(y3<=y2)||
-            (x3>x1)&&(x3<=x2)&&(y3>y1)&&(y3<=y2))
-    return (((dist<10)&&bou)|| getSelMark(x1,y1,x3,y3)|| getSelMark(x2,y2,x3,y3));
+            (x3>x1)&&(x3<=x2)&&(y3>y1)&&(y3<=y2))*/
+            if (Math.abs(a)>100000){dist=0;}
+            let n=5;
+            var bou=((x3<=x1+n)&&(x3>x2-n)&&(y3<=y1+n)&&(y3>y2-n)||
+            (x3>x1-n)&&(x3<=x2+n)&&(y3<=y1+n)&&(y3>y2-n)||
+            (x3<=x1+n)&&(x3>x2-n)&&(y3>y1-n)&&(y3<=y2+n)||
+            (x3>x1-n)&&(x3<=x2+n)&&(y3>y1-n)&&(y3<=y2+n))
+    return (((dist<(10))&&bou)|| getSelMark(x1,y1,x3,y3)|| getSelMark(x2,y2,x3,y3));
    // return (getDist(x1,y1,x3,y3)<10||getDist(x2,y2,x3,y3)<10)
 }
 function getSelMark(x1,y1,x3,y3){
-    return (getDist(x1,y1,x3,y3)<10); 
+    return (getDist(x1,y1,x3,y3)<(10)); 
 }
 function clear(ctx){
     ctx.fillStyle = 'rgb(50, 50, 50)';
@@ -39,6 +46,7 @@ class App{
         this.grid=new grid();
         this.board=new board();
         this.tool=1;
+        this.scale=1;
         this.render();
     }
     selTool(tool){
@@ -60,11 +68,11 @@ class grid{
     render(ctx){
         ctx.beginPath();
         ctx.strokeStyle="rgb(90,90,90";
-        for (let i=0;i<ctx.canvas.width;i+=this.step){
+        for (let i=0;i<ctx.canvas.width;i+=this.step*sc){
             ctx.moveTo(i,0);
             ctx.lineTo(i,ctx.canvas.height);
         }
-        for (let i=0;i<ctx.canvas.height;i+=this.step){
+        for (let i=0;i<ctx.canvas.height;i+=this.step*sc){
             ctx.moveTo(0,i);
             ctx.lineTo(ctx.canvas.width,i);
         }
@@ -98,7 +106,7 @@ class board{
             this.entries[i].markd=-1;
             this.mdp=false;
             this.entr=false;
-            
+ 
         }    
     }
     setSlc(){
@@ -108,13 +116,14 @@ class board{
                 this.entries[i].markd=this.entries[i].mark;
                 this.mdp=this.entries[i].points[this.entries[i].markd];
                 this.entr=this.entries[i];
+                this.cur=this.entries[i];
                 return this.entries[i];
             }
         }    
     }
     render (ctx,cup){
         for(let i=0;i<this.entries.length;i++){
-            this.entries[i].render(ctx,false,cup);
+            this.entries[i].render(ctx,false,cup,false);
         }
         if (this.entr){this.entr.render(ctx,false,cup,this.ofs);}
     }
@@ -129,6 +138,7 @@ class spline{
         this.markd=-1;
         this.divmark=-1;
         this.divmarkd=-1;
+        this.sc=1;
     }
     split (){
         if (this.divmark!=-1){
@@ -181,13 +191,22 @@ class spline{
         }
         
     }
-    checkAll(cup){
+    checkAll(cpp){
+        var cup=[cpp[0]/sc,cpp[1]/sc];
         this.check(cup);
         this.checkMark(cup);
         this.checkDivMark(cup);
+        if (this.mark!=-1) {this.divmark=-1;}
     }
-    
+    drawMarker(ctx, p, sel){
+        if (sel){ctx.fillStyle="rgb(0,255,0)";}
+        else {ctx.fillStyle="rgb(0,0,0)";}
+        ctx.fillRect(p[0]-5,p[1]-5,5,5);
+    }
     render (ctx,cp,cup,ofs){
+        //if (!sc){sc=this.sc};
+        //sc=this.sc;
+        //sc=1;
         //ctx.fillStyle = 'rgb(50, 50, 50)';
         //ctx.fillRect(0, 0, gWindow.canvas.width-1, gWindow.canvas.height-1);
         if (!ofs){ofs=[0,0];}
@@ -197,9 +216,16 @@ class spline{
             if (this.slc==true) {
                 ctx.strokeStyle="rgb(255,0,0)";
                 for(let i=0;i<this.points.length;i++){
-                    if (i==this.mark){ctx.fillStyle="rgb(0,255,0)";}else{
-                    ctx.fillStyle="rgb(0,0,0)";}
-                    ctx.fillRect(this.points[i][0]-5+ofs[0],this.points[i][1]+ofs[1]-5,5,5);    
+                    let px=(this.points[i][0]+ofs[0])*sc;
+                    let py=(this.points[i][1]+ofs[1])*sc;
+
+                    if (i==this.mark){
+                        
+                        this.drawMarker(ctx,[px,py],true);
+                    }
+                    else{
+                        this.drawMarker(ctx,[px,py],false);
+                    }    
                 }
             } else {
                 if (this.sel==true){
@@ -209,15 +235,24 @@ class spline{
                 }
             }
             ctx.beginPath(); 
-            ctx.moveTo(this.points[0][0]+ofs[0], this.points[0][1]+ofs[1]); 
+            ctx.moveTo((this.points[0][0]+ofs[0])*sc, (this.points[0][1]+ofs[1])*sc); 
             for(let i=1;i<this.points.length;i++){
-                
-                ctx.lineTo(this.points[i][0]+ofs[0], this.points[i][1]+ofs[1]);  // Рисует линию до точки (150, 100)
+                let px=(this.points[i][0]+ofs[0])*sc;
+                let py=(this.points[i][1]+ofs[1])*sc;
+                ctx.lineTo(px,py);  // Рисует линию до точки (150, 100)
                 //var eq=getEq(this.points[i][0],this.points[i][1],this.points[i-1][0],this.points[i-1][1])
                 ctx.fillStyle="rgb(0,0,0)";
                 //if (getSelMark(this.points[i][0],this.points[i][1],cup[0],cup[1])){
                 if (i==this.divmark){
-                    ctx.fillRect((this.points[i][0]+this.points[i-1][0])/2-6,(this.points[i][1]+this.points[i-1][1])/2-6,6,6);
+                    let px=sc*(this.points[i][0]+this.points[i-1][0])/2;
+                    let py=sc*(this.points[i][1]+this.points[i-1][1])/2;
+                    if (!this.sel){
+                    // this.drawMarker(ctx,[px,py],false);   
+                    }
+                    else{
+                        this.drawMarker(ctx,[px,py],true);    
+                    }
+                    //ctx.fillRect(-6,-6,6,6);
                 }
               /*  for (let j=this.points[i-1][0];j<this.points[i][0];j++){
                 ctx.fillRect(j,eq[0]*j+eq[1],3,3);
@@ -242,43 +277,66 @@ var brd=new board();
 var spl=new spline();
 var grd=new grid();
 var app=new App();
+var sc=2;
+function scale(scn){
+    scn=Math.trunc(scn);
+    if (scn>=1){
+    var k=scn/sc;
+    sc=scn;
+    gWd.width=gWd.width*k;
+    gWd.height=gWd.height*k;
+    render(gWindow);
+    }
+}
 function onReady(){
     gWd=document.getElementById("wnd");
 	gWindow=gWd.getContext('2d');
 	render(gWindow);
 }   
-function render(gWindow,cx,cy){
+function render(gWindow,c){
+    if (!c) {c=[0,0,0,0]}
+    var cx=c[0];
+    var cy=c[1];
     clear(gWindow);
     grd.render(gWindow);
-    brd.render(gWindow,[cx,cy]);
-    spl.render(gWindow,[cx,cy],[cx,cy]);
+    brd.render(gWindow,[cx*sc,cy*sc]);
+    spl.render(gWindow,[cx*sc,cy*sc],[c[2],c[3]]);
 } 
 function getC(e,gr){
-    var cx = e.pageX - gWd.offsetLeft;
-    var cy = e.pageY - gWd.offsetTop;
+    
+    var ob=document.querySelector(".main");
+
+    var cx = (e.pageX - gWd.offsetLeft)+ob.scrollLeft;
+    var cy = (e.pageY - gWd.offsetTop)+ob.scrollTop;
+    var clx=cx;
+    var cly=cy;
     if (!gr){
-    cx=cx-cx%grd.step;
-    cy=cy-cy%grd.step;
+    cx=cx-cx%(grd.step*sc);
+    cy=cy-cy%(grd.step*sc);
     }
-    return [cx,cy];
+    return [cx/sc,cy/sc,clx/sc,cly/sc,e.pageX - gWd.offsetLeft,e.pageY - gWd.offsetTop];
 }
 
 
 function move(e){
+    
     var c=getC(e);
     var cx=c[0];
     var cy=c[1];
 
     brd.moves(cx,cy);
-    render(gWindow,cx,cy);    
+    render(gWindow,c);    
 }
 function down(e){
-    brd.resetSlc();
+    
     var c=getC(e);
     var cx=c[0];
     var cy=c[1];
     
-    if ((cx<0)||(cy<0)||(cx>gWd.width)||(cy>gWd.height)) {return false;}
+    if ((c[4]<0)||(c[5]<0)||(cx>gWd.width)||(cy>gWd.height)) {return false;}
+    brd.resetSlc();
+    
+    
     if (e.buttons==1){
         
         //if (e.buttons==1){
@@ -292,7 +350,9 @@ function down(e){
         brd.entries.push(spl.fin());
         
         spl=new spline();
+        
         brd.setSlc();
+
 
         if (brd.entr){
                 let zv=brd.entr.divmark;
@@ -301,7 +361,7 @@ function down(e){
                 }
         }
     }
-    render(gWindow,cx,cy);
+    render(gWindow,c);
     
     //}    
 }
@@ -318,5 +378,18 @@ function up(e){
     }
     }
     brd.entr=false;
-    render(gWindow,cx,cy);
+    render(gWindow,c);
+}
+function key(e){
+    
+    if (e.key=="Delete"){
+     brd.entries.forEach((it)=>
+     {if (it.slc==true){
+         it.points=[];
+         it.slc=false;
+     }
+
+     })  
+    }
+    render(gWindow);
 }
