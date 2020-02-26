@@ -6,7 +6,21 @@
         <link rel="stylesheet" type="text/css" href="style.css">
     </head>
     <body>
-        <canvas width="600px" height="400px" id="wnd" oncontextmenu="return false"></canvas>
+        <div class="wrapper">
+            <div class="toolbar">
+            </div>
+            <div class="sidebar">
+                    <div class="sidebar_item" id="tool0" onclick="app.selTool(0); app.render();">
+                        select
+                    </div>
+                    <div class="sidebar_item" id="tool1" onclick="app.selTool(1); app.render();">
+                        spline
+                    </div>
+            </div>
+            <div class="main">
+                <canvas width="600px" height="400px" id="wnd" oncontextmenu="return false"></canvas> 
+            </div>
+        </div>
         <script src="main.js"></script>
     </body>
 </html>
