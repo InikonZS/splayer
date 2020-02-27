@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', onReady);
 document.addEventListener('mousemove', move);
 document.addEventListener('mousedown', down);
 document.addEventListener('mouseup', up);
+document.addEventListener('keydown', keyd);
 document.addEventListener('keyup', key);
 var gWd;
 var gWindow;
@@ -26,16 +27,16 @@ function getSel(x1,y1,x2,y2,x3,y3){
             (x3<=x1)&&(x3>x2)&&(y3>y1)&&(y3<=y2)||
             (x3>x1)&&(x3<=x2)&&(y3>y1)&&(y3<=y2))*/
             if (Math.abs(a)>100000){dist=0;}
-            let n=5;
+            let n=5/sc;
             var bou=((x3<=x1+n)&&(x3>x2-n)&&(y3<=y1+n)&&(y3>y2-n)||
             (x3>x1-n)&&(x3<=x2+n)&&(y3<=y1+n)&&(y3>y2-n)||
             (x3<=x1+n)&&(x3>x2-n)&&(y3>y1-n)&&(y3<=y2+n)||
             (x3>x1-n)&&(x3<=x2+n)&&(y3>y1-n)&&(y3<=y2+n))
-    return (((dist<(10))&&bou)|| getSelMark(x1,y1,x3,y3)|| getSelMark(x2,y2,x3,y3));
+    return (((dist<(10/sc))&&bou)|| getSelMark(x1,y1,x3,y3)|| getSelMark(x2,y2,x3,y3));
    // return (getDist(x1,y1,x3,y3)<10||getDist(x2,y2,x3,y3)<10)
 }
 function getSelMark(x1,y1,x3,y3){
-    return (getDist(x1,y1,x3,y3)<(10)); 
+    return (getDist(x1,y1,x3,y3)<(10/sc)); 
 }
 function clear(ctx){
     ctx.fillStyle = 'rgb(50, 50, 50)';
@@ -89,6 +90,13 @@ class board{
         this.ldx=0;
         this.ldy=0;
     }
+    
+    getSelected(){
+        var sel;
+        brd.entries.forEach((it)=>{if (it.slc==true){sel=it;}});
+        return sel;   
+    }
+
     moves(cx,cy){
         if (this.mdp){
             this.mdp[0]=cx;
@@ -193,6 +201,7 @@ class spline{
     }
     checkAll(cpp){
         var cup=[cpp[0]/sc,cpp[1]/sc];
+       // gWindow.fillRect(cup[0]-5,cup[1]-5,5,5);
         this.check(cup);
         this.checkMark(cup);
         this.checkDivMark(cup);
@@ -209,6 +218,7 @@ class spline{
         //sc=1;
         //ctx.fillStyle = 'rgb(50, 50, 50)';
         //ctx.fillRect(0, 0, gWindow.canvas.width-1, gWindow.canvas.height-1);
+        //splitPoints(this);
         if (!ofs){ofs=[0,0];}
         this.checkAll(cup);
         if (this.points.length>0){
@@ -299,7 +309,7 @@ function render(gWindow,c){
     var cy=c[1];
     clear(gWindow);
     grd.render(gWindow);
-    brd.render(gWindow,[cx*sc,cy*sc]);
+    brd.render(gWindow,[c[2]*sc,c[3]*sc]);
     spl.render(gWindow,[cx*sc,cy*sc],[c[2],c[3]]);
 } 
 function getC(e,gr){
@@ -324,8 +334,20 @@ function move(e){
     var cx=c[0];
     var cy=c[1];
 
+    
+
     brd.moves(cx,cy);
-    render(gWindow,c);    
+    render(gWindow,c);
+    if (brd.sele){
+    gWindow.beginPath();
+    gWindow.strokeStyle="rgb(255,0,0)";
+    gWindow.moveTo(brd.ldx*sc,brd.ldy*sc);
+    gWindow.lineTo(c[4],brd.ldy*sc);
+    gWindow.lineTo(c[4],c[5]);
+    gWindow.lineTo(brd.ldx*sc,c[5]);
+    gWindow.lineTo(brd.ldx*sc,brd.ldy*sc);
+    gWindow.stroke();  
+    }  
 }
 function down(e){
     
@@ -334,23 +356,28 @@ function down(e){
     var cy=c[1];
     
     if ((c[4]<0)||(c[5]<0)||(cx>gWd.width)||(cy>gWd.height)) {return false;}
+    
+    //if (!app.ctr){brd.resetSlc();}
     brd.resetSlc();
     
     
     if (e.buttons==1){
-        
-        //if (e.buttons==1){
-        spl.points.push([cx,cy]);
+        //if (app.tool==1){
+            spl.points.push([cx,cy]);
+        //}
     }
     if ((e.buttons==2)||((app.tool==0)&&(e.buttons==1))){
         //brd.entries.push(spl);
+        
         brd.ldx=cx;
         brd.ldy=cy;
         brd.ofs=[0,0];
-        brd.entries.push(spl.fin());
-        
+
+
+        if (spl.points.length>1){
+            brd.entries.push(spl.fin());
+        }
         spl=new spline();
-        
         brd.setSlc();
 
 
@@ -359,37 +386,69 @@ function down(e){
                 if (brd.entr.split()){
                  brd.mdp=brd.entr.points[zv];
                 }
+        } else {
+            brd.sele=true;
         }
     }
     render(gWindow,c);
     
     //}    
 }
+function mergePoints(el){
+    if (!el){return false;}
+    if (el.points.length>1){
+    var pn=[el.points[0]];
+    for( let i=1;i<el.points.length;i++){
+        if (!(getDist(el.points[i][0],el.points[i][1],el.points[i-1][0],el.points[i-1][1])<0.00001)){
+            pn.push(el.points[i]);
+        }    
+    } 
+    el.points=pn;  
+    }
+}
 
 function up(e){
     var c=getC(e);
     var cx=c[0];
     var cy=c[1];
+    brd.sele=false;
     brd.mdp=false;
-    if (brd.entr){
+   /* if (brd.entr){
     for (let i=0;i<brd.entr.points.length;i++){
         brd.entr.points[i][0]=brd.entr.points[i][0]+brd.ofs[0];
         brd.entr.points[i][1]=brd.entr.points[i][1]+brd.ofs[1];
+    }
+    }*/
+
+    
+    //brd.entries.forEach((it)=>{if (it.slc==true){mergePoints(it);}});  
+    var it=brd.getSelected();
+    if (it){
+    mergePoints(it);
+    for (let i=0;i<it.points.length;i++){
+        it.points[i][0]=it.points[i][0]+brd.ofs[0];
+        it.points[i][1]=it.points[i][1]+brd.ofs[1];
     }
     }
     brd.entr=false;
     render(gWindow,c);
 }
+function keyd(e){
+    if (e.key=="Control"){
+        app.ctr=true;
+    }    
+}
 function key(e){
-    
+    console.log(e.key);
+    if (e.key=="Control"){
+        app.ctr=false;
+    }
     if (e.key=="Delete"){
-     brd.entries.forEach((it)=>
-     {if (it.slc==true){
-         it.points=[];
-         it.slc=false;
-     }
-
-     })  
+        var it=brd.getSelected();
+        if (it){
+            it.points=[];
+            it.slc=false;
+        }
     }
     render(gWindow);
 }
