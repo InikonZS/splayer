@@ -16,10 +16,10 @@
                     <div class="sidebar_item" id="tool1" onclick="app.selTool(1); app.render();">
                         spline
                     </div>
-                    <div class="sidebar_item" id="tool1" onclick="scale(sc*2)">
+                    <div class="sidebar_item" id="tool1" onclick="app.setScale(app.scale*2)">
                         zoom+
                     </div>
-                    <div class="sidebar_item" id="tool1" onclick="scale(sc/2)">
+                    <div class="sidebar_item" id="tool1" onclick="app.setScale(app.scale/2)">
                         zoom-
                     </div>
             </div>
@@ -35,6 +35,6 @@
                     <p>Use tool Spline to draw new spline</p>
             </div>
         </div>
-        <script src="main.js"></script>
+        <script src="clean.js"></script>
     </body>
 </html>
