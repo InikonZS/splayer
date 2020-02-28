@@ -19,23 +19,18 @@ function onMove(e){
 
     if (app.tool==0){
         if (e.buttons==1){
-           // let hov=false;
-           // app.selectionPoints.forEach((it)=>{
-           //     hov|=it.wasHover(app.scale,app.cursor);
-           // });
            let hov=app.selection.selPoints.wasPointHover(app.scale,app.cursor);//app.selPoints.wasPointHover(app.scale,app.cursor);
             if (hov){
-               // app.selectionPoints.forEach((it)=>{
-                //    it.move(app.cursor);
                 app.selection.selPoints.move(app.cursor);
-                    app.cursor.cloud=false;
-               // });
+                app.cursor.cloud=false;
             }else{
+
                 if (app.selection.wasHover(app.scale,app.cursor)){
-                    app.selection.entries.forEach((it)=>{
-                        it.move(app.cursor);
+                    app.selection.move(app.cursor);
+                    //app.selection.entries.forEach((it)=>{
+                    //    it.move(app.cursor);
                         app.cursor.cloud=false;
-                    });       
+                    //});       
                 } 
             }
         }  
@@ -50,23 +45,27 @@ function onMove(e){
 function onDown(e){
     var cx = (e.pageX - app.canvasDOM.offsetLeft)+app.scrollDOM.scrollLeft;
     var cy = (e.pageY - app.canvasDOM.offsetTop)+app.scrollDOM.scrollTop;
-    if ((cx<0)||(cy<0)||(((e.pageX - app.canvasDOM.offsetLeft))>app.scrollDOM.clientWidth)||(((e.pageY - app.canvasDOM.offsetTop))>app.scrollDOM.clientHeight)) {return false;}
+    var dx=(e.pageX - app.canvasDOM.offsetLeft);
+    var dy = (e.pageY - app.canvasDOM.offsetTop);
+    if ((dx<0)||(dy<0)||(((e.pageX - app.canvasDOM.offsetLeft))>app.scrollDOM.clientWidth)||(((e.pageY - app.canvasDOM.offsetTop))>app.scrollDOM.clientHeight)) {return false;}
 
     if (app.tool==0){
         if (e.buttons==1){
             var sel=app.selection.isPointHover(app.scale,app.cursor);
             if (sel){
-                //console.log("sdsdfddfd");
                 if (!sel.selected){
-                    app.selection.selectHoveredPoints();
-                   // app.selectionPoints=app.selection.selectionPoints;
-                   //app.selPoints.points=app.selection.selectionPoints;
-                    //console.log("sdsd");
-                    //app.selectionPoints.push(sel);
+                    app.selection.selectHoveredPoints(); //обновляем выделение
                     sel.selected=true; 
                 }
-
             }else{
+                var sl=app.selection.isMidle(app.scale,app.cursor);
+                if(sl){ 
+                    sele=sl.split();
+                    app.selection.selectHoveredPoints(); //обновляем выделение
+                    app.selection.selPoints.points.push(sele);
+                    sele.selected=true; 
+
+                }else{
                 var selc=app.board.isHover(app.scale,app.cursor)
                 if (selc){
                     if (!selc.selected){
@@ -77,7 +76,7 @@ function onDown(e){
                     }
                     
                 } 
-            }
+            }}
             app.startCursorCloud(cx, cy);
         }  
     }
@@ -87,9 +86,16 @@ function onDown(e){
             app.ghostSpline.add();
         }
         if (e.buttons==2){
+            if (app.ghostSpline.points.length==0){
+            app.selTool(0);
+            }
+            if (app.ghostSpline.points.length>1){
             app.board.entries.push(app.ghostSpline);
+            }
             app.ghostSpline=new Spline(app.ctx);
             app.ghostSpline.ghostPoint.setPosition(app.cursor.gridPosition.x, app.cursor.gridPosition.y);
+            
+            
         }
     } 
     app.render();
@@ -98,46 +104,27 @@ function onDown(e){
 function onUp(e){
     var cx = (e.pageX - app.canvasDOM.offsetLeft)+app.scrollDOM.scrollLeft;
     var cy = (e.pageY - app.canvasDOM.offsetTop)+app.scrollDOM.scrollTop;
-    if ((cx<0)||(cy<0)||(((e.pageX - app.canvasDOM.offsetLeft))>app.scrollDOM.clientWidth)||(((e.pageY - app.canvasDOM.offsetTop))>app.scrollDOM.clientHeight)) {return false;}
-    //if ((cx<0)||(cy<0)||((cx)>app.scrollDOM.clientWidth)||((cy)>app.scrollDOM.clientHeight)) {return false;}
-
+    var dx=(e.pageX - app.canvasDOM.offsetLeft);
+    var dy = (e.pageY - app.canvasDOM.offsetTop);
+    if ((dx<0)||(dy<0)||(((e.pageX - app.canvasDOM.offsetLeft))>app.scrollDOM.clientWidth)||(((e.pageY - app.canvasDOM.offsetTop))>app.scrollDOM.clientHeight)) {return false;}
+    
     if (app.tool==0){
-        
+        //не убираем выделение если переместили группу линий
         if (!app.selection.wasHover(app.scale,app.cursor)){
-        //app.selection=new Group();
-        //app.board.entries.forEach((it)=>{it.selected=false; if (it.hover) {it.selected=true; app.selection.entries.push(it)}});
-        app.board.selectHovered();
-        app.selection.entries=app.board.selection;
+            app.board.selectHovered();
+            app.selection.entries=app.board.selection;
         }
-       // selectHovered(){
-       //     this.selection=[]
-       //     this.entries.forEach((it)=>{
-        //        it.selected=it.hover;
-        //        if (it.selected){this.selection.push(it)};   
-       //     });
-       // }
-        //let hov=false;
-        //    app.selectionPoints.forEach((it)=>{
-        //        hov|=it.wasHover(app.scale,app.cursor);
-        //    });
-            let hov =app.selection.isPointHover(app.scale,app.cursor);
-            if (!hov){
-                app.selection.selectHoveredPoints();
-                //app.selPoints.points=app.selection.selectionPoints;
-               // app.selectionPoints=app.selection.selectionPoints;
-            }
-            app.selection.selPoints.applyMove();
-        //app.selectionPoints.forEach((it)=>{
-        //    it.applyMove();
-        //});
-       // app.selection.entries.forEach((it)=>{
-       //     it.applyMove();
-       // });
+        //не убираем выделение если перместили группу точек
+        let hov =app.selection.selPoints.wasPointHover(app.scale,app.cursor);
+        if (!hov){
+            app.selection.selectHoveredPoints();
+        }
+        //применяем перемещение
+        app.selection.selPoints.applyMove();
         app.selection.applyMove();
-        //console.log(app.selection);
     
     }
-    app.cursor.hidden=false;
+    //app.cursor.hidden=false;
     app.endCursorCloud();
     app.render();
 }
@@ -154,7 +141,8 @@ function onKeyUp(e){
         app.ctr=false;
     }
     if (e.key=="Delete"){
-        
+    
+        app.board.delete();   
     }    
 }
 
@@ -215,8 +203,8 @@ class App {
         this.cursor.render(this.scale);
         this.ghostSpline.render(this.scale, true, false, false);
         //this.board.entries.forEach((it)=>{it.hover=it.isHover(this.scale, this.cursor.realPosition.x,this.cursor.realPosition.y)});
-        this.board.entries.forEach((it)=>{it.select(this.scale, this.cursor)});
-        this.board.entries.forEach((it)=>{if (it.selected){it.selectMarker(this.scale, this.cursor)}});
+        this.board.entries.forEach((it)=>{if (it.type!="sple"){it.select(this.scale, this.cursor)}});
+        this.board.entries.forEach((it)=>{if (it.type=="spline"){if (it.selected){it.selectMarker(this.scale, this.cursor)}}});
         this.board.render(this.scale);
     }
 }
@@ -299,6 +287,61 @@ class Group {
         this.selPoints=new Spline (this.ctx);
         this.selection = []; 
     }
+    delete(){
+        var res=[];
+        for ( let i=0; i<this.selection.length;i++){
+            this.selection[i].de=false;
+
+        }
+        this.selection=[];
+        for ( let i=0; i<this.entries.length;i++){
+            (this.entries[i].de!=false) ? res.push(this.entries[i]):this.entries[i].de=true;
+
+        }
+        this.entries=res;
+        app.render();
+    }
+
+    groupe(){
+        var res=[];
+        var gr=new Group(this.ctx);
+        for ( let i=0; i<this.selection.length;i++){
+            this.selection[i].de=false;
+
+        }
+        this.selection=[];
+        for ( let i=0; i<this.entries.length;i++){
+            if(this.entries[i].de!=false) {res.push(this.entries[i])} else
+            {this.entries[i].de=true;
+            this.entries[i].selected=false;
+            this.entries[i].hover=false;
+            gr.entries.push(this.entries[i])} 
+
+        }
+        this.entries=res;
+        this.entries.push(gr);
+        app.render();
+    }
+
+    select(sc,cursor){
+        res=false;
+        this.entries.forEach((it)=>{
+            res|=it.select(sc,cursor);
+        });
+        if (res){
+        this.entries.forEach((it)=>{
+            it.hover=true;
+        });
+        this.hover=true;
+        }
+        return res;
+    }
+
+    move(cursor){
+        this.entries.forEach((it)=>{
+            it.move(cursor);
+        });
+    }
 
     applyMove(){
         this.entries.forEach((it)=>{
@@ -318,28 +361,36 @@ class Group {
         //this.selectionPoints=[];
         this.selPoints=new Spline(this.ctx);
         this.entries.forEach((it)=>{
+            if (it.type=="spline"){
             it.points.forEach((jt)=>{
                 jt.selected=jt.hover;
                 if (jt.selected){
                     //this.selectionPoints.push(jt); 
                     this.selPoints.points.push(jt)};   
             }) 
+            }
         });
     }
 
+  
+    isMidle(sc,cursor){
+        for (let i=0;i<this.entries.length;i++){
+            var index=this.entries[i].isMidle(sc,cursor);
+            if (index){return this.entries[i];}
+        } 
+        return false;   
+    }
+
     isPointHover(sc,cursor){
-        let x=cursor.realPosition.x;
-        let y=cursor.realPosition.y;
         for (let i=0;i<this.entries.length;i++){
             var point=this.entries[i].isPointHover(sc,cursor);
+            //return point;
             if (point) {return point;}
         }
         return false;
     }
 
     isHover(sc,cursor){
-        let x=cursor.realPosition.x;
-        let y=cursor.realPosition.y;
         for (let i=0;i<this.entries.length;i++){
             if (this.entries[i].isHover(sc,cursor)) {return this.entries[i];}
         }
@@ -347,10 +398,8 @@ class Group {
     }
 
     wasHover(sc,cursor){
-        let x=cursor.startPos.x;
-        let y=cursor.startPos.y;
         for (let i=0;i<this.entries.length;i++){
-            if (this.entries[i].wasHover(sc,cursor)) {return true;}
+            if (this.entries[i].wasHover(sc,cursor)) {return this.entries[i];}
         }
         return false;
     }
@@ -365,6 +414,8 @@ class Spline {
         this.ctx=ctx;
         this.hovered=[];
         this.points=[];
+        this.midIndex=0;
+        //this.midPoints=[];
         this.ghostPoint=new Vertex(0, 0); 
         this.hover=false;
         this.selected=false;
@@ -389,9 +440,10 @@ class Spline {
         let ly=this.ghostPoint.y;
         this.points.push(this.ghostPoint);
         this.ghostPoint=new Vertex(lx, ly); 
+        
     }
 
-    isPointHover(sc, cursor){
+    isPointHover(sc, cursor){ // возвращаем первую точку под курсором
         let x=cursor.realPosition.x;
         let y=cursor.realPosition.y;
         for (let i=0; i<this.points.length; i++){
@@ -402,7 +454,7 @@ class Spline {
         return false;
     }
 
-    wasPointHover(sc, cursor){
+    wasPointHover(sc, cursor){ // возвращаем первую точку до перемещения под курсором
         let x=cursor.startPos.x;
         let y=cursor.startPos.y;
         for (let i=0; i<this.points.length; i++){
@@ -411,32 +463,29 @@ class Spline {
             if (getSelMark(px,py,x,y,sc)) {return this.points[i]};
         }
         return false;
+    }
+
+    _hover(sc, x, y){
+        for (let i=1; i<this.points.length; i++){
+            let px=this.points[i].x;
+            let py=this.points[i].y;
+            let ex=this.points[i-1].x;
+            let ey=this.points[i-1].y;
+            if (getSel(px,py,ex,ey,x,y,sc)) {return true};
+        }
+        return false;    
     }
 
     isHover(sc, cursor){
         let x=cursor.realPosition.x;
         let y=cursor.realPosition.y;
-        for (let i=1; i<this.points.length; i++){
-            let px=this.points[i].x;
-            let py=this.points[i].y;
-            let ex=this.points[i-1].x;
-            let ey=this.points[i-1].y;
-            if (getSel(px,py,ex,ey,x,y,sc)) {return true};
-        }
-        return false;
+        return this._hover(sc,x,y);
     }
 
     wasHover(sc, cursor){
         let x=cursor.startPos.x;
         let y=cursor.startPos.y;
-        for (let i=1; i<this.points.length; i++){
-            let px=this.points[i].x;
-            let py=this.points[i].y;
-            let ex=this.points[i-1].x;
-            let ey=this.points[i-1].y;
-            if (getSel(px,py,ex,ey,x,y,sc)) {return true};
-        }
-        return false;
+        return this._hover(sc,x,y);
     }
 
     select(sc, cursor){
@@ -461,7 +510,7 @@ class Spline {
             }
             this.hover=cs||bx;
         }
-
+        return this.hover;
     }
 
     selectMarker(sc, cursor){
@@ -479,7 +528,51 @@ class Spline {
         }    
     }
 
+    split(){
+        var res=[]
+        for (let i=0; i<this.points.length; i++){
+            res.push(this.points[i]);
+            if ((i==this.midIndex-1)){
+                var nd=this.getMidle(this.midIndex);
+                nd.x=roundToStep(nd.x,app.grid.step);
+                nd.y=roundToStep(nd.y,app.grid.step);
+                res.push(nd);
+            }
+        }  
+        this.points=res;  
+        return nd;    
+    }
+    isMidle(sc, cursor){
+        for (let i=1; i<this.points.length; i++){
+            let gm=this.getMidle(i);
+            let px=roundToStep(gm.x,app.grid.step)
+            let py=roundToStep(gm.y,app.grid.step);
+            let x=cursor.realPosition.x;
+            let y=cursor.realPosition.y;
+            let hov=getSelMark(px,py,x,y,sc)
+            if (hov){this.midIndex=i; return i;} 
+           
+        }    
+        return false;
+    }
+
+    getMidle(i){
+        //var res=new Spline(this.ctx);
+        
+        //(let i=1; i<this.points.length; i++){
+            let px=(this.points[i].x+this.points[i].mx);
+            let py=(this.points[i].y+this.points[i].my);
+            let px1=(this.points[i-1].x+this.points[i-1].mx);
+            let py1=(this.points[i-1].y+this.points[i-1].my); 
+            var vert=new Vertex ((px+px1)/2,(py+py1)/2); 
+            
+            return vert; 
+        //}
+       // return res;  
+    }
+
     render(sc, gh, hover, selected){
+        //this.getMidles();
         this.ctx.beginPath();
         this.ctx.strokeStyle="rgb(0,0,0)";
         if (hover){
@@ -488,7 +581,10 @@ class Spline {
         if (this.selected){
             this.ctx.strokeStyle="rgb(255,0,0)";
         }
-
+       // if (this.selected){
+            //var mids=this.getMidles();
+           // this.midPoints.forEach((it)=>{it.render(this.ctx,sc)})
+       // }
         for (let i=0; i<this.points.length; i++){
             let px=(this.points[i].x+this.points[i].mx)*sc;
             let py=(this.points[i].y+this.points[i].my)*sc;
@@ -497,6 +593,14 @@ class Spline {
             i==0 ? this.ctx.moveTo(px,py) : this.ctx.lineTo(px,py); 
             if (this.selected){
                 this.points[i].render(this.ctx, sc);
+                if (i>0) {
+
+                    let a=this.getMidle(i);
+                    let nd=this.getMidle(i);
+                    nd.x=roundToStep(nd.x,app.grid.step);
+                    nd.y=roundToStep(nd.y,app.grid.step);
+                    a.hover=nd.isHover(sc,app.cursor);
+                    a.render(this.ctx,sc);}
             }
         }
         if (gh){
@@ -520,6 +624,8 @@ class Vertex {
     constructor (x, y){
         this.x=x;
         this.y=y;
+        this.mx=0;
+        this.my=0;
         this.hover=false;
         this.selected=false;
     }
@@ -607,6 +713,22 @@ function inBox(x1,y1,x2,y2,x3,y3){
             (x3<=x1+n)&&(x3>x2-n)&&(y3>y1-n)&&(y3<=y2+n)||
             (x3>x1-n)&&(x3<=x2+n)&&(y3>y1-n)&&(y3<=y2+n));
     return bou;    
+}
+
+function solveLines(x1,y1,x2,y2,x3,y3,x4,y4,sc){
+    var kx=getEq(x1,y1,x2,y2);
+    var k1=kx[0];
+    var b1=kx[1];
+    var kx=getEq(x3,y3,x4,y4);
+    var k2=kx[0];
+    var b2=kx[1];
+    var x=(b2-b1)/(k-K1);
+    var y=k1*x+b1;
+    if (inBox(x1,y1,x2,y2,x,y)){
+        var res= [x,y];
+    }
+    else{res=false}
+    return res;
 }
 
 function getSelMark(x1,y1,x3,y3, sc){
