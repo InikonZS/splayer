@@ -732,7 +732,7 @@ class Spline {
         if (this.selected){
             this.ctx.strokeStyle="rgb(255,0,0)";
         }
-        
+        //to do draw pads upper 
         if (this.pad&&this.points[0]){
             //this.ctx.lineWidth=1;
             this.ctx.beginPath();
@@ -746,8 +746,8 @@ class Spline {
             this.ctx.arc(this.points[0].x*sc,this.points[0].y*sc,1*sc,0,Math.PI*2);
             this.ctx.fillStyle="rgb(0,0,0)";
             this.ctx.fill();
-            this.ctx.stroke();
-            //this.ctx.closePath();
+            //this.ctx.stroke();
+            this.ctx.closePath();
             //this.ctx.lineWidth=this.width*sc;
         }
        // if (this.selected){
@@ -760,7 +760,7 @@ class Spline {
             //let px=(this.points[i].x)*sc;
             //let py=(this.points[i].y)*sc;
             i==0 ? this.ctx.moveTo(px,py) : this.ctx.lineTo(px,py); 
-            if (this.selected&&(!noMark)){
+          /*  if (this.selected&&(!noMark)){
                 this.points[i].render(this.ctx, sc);
                 if (i>0) {
 
@@ -770,7 +770,7 @@ class Spline {
                     nd.y=roundToStep(nd.y,app.grid.step);
                     a.hover=nd.isHover(sc,app.cursor);
                     a.render(this.ctx,sc);}
-            }
+            }*/
         }
         if (gh){
             if (this.points.length>0){
@@ -805,6 +805,20 @@ class Spline {
             
         }
         this.ctx.stroke(); 
+        for (let i=0; i<this.points.length; i++){
+            if (this.selected&&(!noMark)){
+                this.points[i].render(this.ctx, sc);
+                if (i>0) {
+
+                    let a=this.getMidle(i);
+                    let nd=this.getMidle(i);
+                    nd.x=roundToStep(nd.x,app.grid.step);
+                    nd.y=roundToStep(nd.y,app.grid.step);
+                    a.hover=nd.isHover(sc,app.cursor);
+                    a.render(this.ctx,sc,true);}
+            }
+        }
+
         this.selected=sll;
      this.ctx.lineWidth=1;   
     }
@@ -891,7 +905,7 @@ class Vertex {
         return res;
     }
 
-    render (ctx, sc){
+    render (ctx, sc, rd){
         ctx.fillStyle="rgb(0,0,0)";
         if (this.hover){
             ctx.fillStyle="rgb(200,150,0)";    
@@ -900,7 +914,20 @@ class Vertex {
             ctx.fillStyle="rgb(0,255,0)";    
         }
         //ctx.fillRect(this.x*sc-5,this.y*sc-5,5,5);
-        ctx.fillRect((this.mx+this.x)*sc-5,(this.my+this.y)*sc-5,5,5);
+        if (!rd){
+            ctx.fillRect((this.mx+this.x)*sc-3,(this.my+this.y)*sc-3,6,6);
+        }
+        else{
+            if (this.hover){
+                ctx.fillStyle="rgb(0,0,150)";    
+            }else{ctx.fillStyle="rgb(0,0,80)";}
+            ctx.beginPath();
+            ctx.arc(this.x*sc,this.y*sc,3,0,Math.PI*2);
+            
+            ctx.fill();
+            //this.ctx.stroke();
+            ctx.closePath();
+        }
     }
 
 }
