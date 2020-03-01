@@ -103,6 +103,9 @@ function onDown(e){
             }
             if (app.ghostSpline.points.length>1){
             app.board.entries.push(app.ghostSpline);
+            } else {
+            app.ghostSpline.pad=true;
+            app.board.entries.push(app.ghostSpline);
             }
             app.ghostSpline=new Spline(app.ctx);
             app.ghostSpline.ghostPoint.setPosition(app.cursor.gridPosition.x, app.cursor.gridPosition.y);
@@ -162,6 +165,8 @@ class Base{
     constructor (wn){
         this.items=[];
         this.wn=wn;
+        this.selection;
+        this.selIndex;
     }
 
     add(name ,group){
@@ -170,10 +175,17 @@ class Base{
         ni.model=group.dublicate();
         this.items.push(ni);
     }
+    select(index){
+        this.selIndex=index;
+        this.selection=this.items[index];
+    }
     render(){
         var ht="";
-        this.items.forEach((it)=>{
-            ht+=("<p>"+it.name+"</p>");
+        this.items.forEach((it,i)=>{
+            let st="";
+            if (i==this.selIndex){st=' style="background-color:rgb(80,80,80)" ';}
+            
+            ht+=('<p onclick="app.base.select('+i+')" '+st+'>'+it.name+'</p>');
         });
         this.wn.innerHTML=ht;
     }
@@ -526,6 +538,8 @@ class Spline {
         this.hovered=[];
         this.points=[];
         this.midIndex=0;
+        this.width=4;
+        this.pad=false;
         this.de=true;
         //this.midPoints=[];
         this.ghostPoint=new Vertex(0, 0); 
@@ -550,6 +564,16 @@ class Spline {
     add(){
         let lx=this.ghostPoint.x;
         let ly=this.ghostPoint.y;
+
+        if (this.points.length>0){
+            let pu=this.calcBi(1);
+            let px1=pu[0];
+            let py1=pu[1];
+            let np=new Vertex(px1,py1);
+            if (!((px1==lx)&&(py1==ly))){
+            this.points.push(np);}
+        }
+        
         this.points.push(this.ghostPoint);
         this.ghostPoint=new Vertex(lx, ly); 
         
@@ -685,6 +709,8 @@ class Spline {
 
     dublicate(){
         var res=new Spline(this.ctx);
+        res.pad=this.pad;
+        res.width=this.width;
         this.points.forEach((it)=>{
             res.points.push(it.dublicate());
         })
@@ -693,15 +719,36 @@ class Spline {
 
     render(sc, gh, hover, selected, noMark){
         //this.getMidles();
+        this.ctx.lineJoin="round";
+        this.ctx.lineCap="round";
         var sll=this.selected;
         this.selected|=selected;
         this.ctx.beginPath();
+        this.ctx.lineWidth=this.width*sc;
         this.ctx.strokeStyle="rgb(0,0,0)";
         if (hover){
             this.ctx.strokeStyle="rgb(80,0,0)";
         }
         if (this.selected){
             this.ctx.strokeStyle="rgb(255,0,0)";
+        }
+        
+        if (this.pad&&this.points[0]){
+            //this.ctx.lineWidth=1;
+            this.ctx.beginPath();
+            this.ctx.arc(this.points[0].x*sc,this.points[0].y*sc,5*sc,0,Math.PI*2);
+            this.ctx.fillStyle="rgb(50,100,0)";
+            this.ctx.fill();
+           // this.ctx.stroke();
+            this.ctx.closePath();
+            //this.ctx.stroke
+            this.ctx.beginPath();
+            this.ctx.arc(this.points[0].x*sc,this.points[0].y*sc,1*sc,0,Math.PI*2);
+            this.ctx.fillStyle="rgb(0,0,0)";
+            this.ctx.fill();
+            this.ctx.stroke();
+            //this.ctx.closePath();
+            //this.ctx.lineWidth=this.width*sc;
         }
        // if (this.selected){
             //var mids=this.getMidles();
@@ -726,14 +773,69 @@ class Spline {
             }
         }
         if (gh){
+            if (this.points.length>0){
+           // let lx=this.points[this.points.length-1].x*sc;
+            //let ly=this.points[this.points.length-1].y*sc;
             let px=this.ghostPoint.x*sc;
             let py=this.ghostPoint.y*sc;
-            this.ctx.lineTo(px,py);    
+            let pu=this.calcBi(sc);
+            let px1=pu[0];
+            let py1=pu[1];
+          /*  if ((py-ly)*(px-lx)>0){
+                if (Math.abs(py-ly)<Math.abs(px-lx)){
+                    px1=(px)-((py-ly));
+                    py1=ly;
+                }else{
+                    py1=(py)-((px-lx));
+                    px1=lx;   
+                }
+            }else{
+                if (Math.abs(py-ly)<Math.abs(px-lx)){
+                    px1=(px)+((py-ly));
+                    py1=ly;
+                }else{
+                    py1=(py)+((px-lx));
+                    px1=lx;   
+                }    
+            }
+            */
+            this.ctx.lineTo(px1,py1); 
+            this.ctx.lineTo(px,py); 
+            }   
             
         }
         this.ctx.stroke(); 
         this.selected=sll;
+     this.ctx.lineWidth=1;   
     }
+
+    calcBi(sc){
+            let px=this.ghostPoint.x*sc;
+            let py=this.ghostPoint.y*sc;
+            let lx=this.points[this.points.length-1].x*sc;
+            let ly=this.points[this.points.length-1].y*sc;
+            let px1;
+            let py1;
+            if ((py-ly)*(px-lx)>0){
+                if (Math.abs(py-ly)<Math.abs(px-lx)){
+                    px1=(px)-((py-ly));
+                    py1=ly;
+                }else{
+                    py1=(py)-((px-lx));
+                    px1=lx;   
+                }
+            }else{
+                if (Math.abs(py-ly)<Math.abs(px-lx)){
+                    px1=(px)+((py-ly));
+                    py1=ly;
+                }else{
+                    py1=(py)+((px-lx));
+                    px1=lx;   
+                }    
+            }
+        return [px1,py1];
+    }
+    
 }
 
 class Sprite {

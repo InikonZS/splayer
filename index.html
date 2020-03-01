@@ -16,16 +16,22 @@
                     <div class="sidebar_item" id="tool1" onclick="app.selTool(1); app.render();">
                         spline
                     </div>
-                    <div class="sidebar_item" id="tool1" onclick="app.board.groupe()">
+                    <div class="sidebar_item" id="" onclick="app.board.groupe()">
                         group
                     </div>
-                    <div class="sidebar_item" id="tool1" onclick="app.board.unGroupe()">
+                    <div class="sidebar_item" id="" onclick="app.board.unGroupe()">
                         ungroup
                     </div>
-                    <div class="sidebar_item" id="tool1" onclick="app.setScale(app.scale*2)">
+                    <div class="sidebar_item" id="" onclick="app.base.add('model',app.selection.dublicate()); app.render();">
+                        to base
+                    </div>
+                    <div class="sidebar_item" id="" onclick="if (app.base.selection){app.board.entries.push(app.base.items[app.base.selIndex].model.dublicate()); app.render();}">
+                        from base
+                    </div>
+                    <div class="sidebar_item" id="" onclick="app.setScale(app.scale*2)">
                         zoom+
                     </div>
-                    <div class="sidebar_item" id="tool1" onclick="app.setScale(app.scale/2)">
+                    <div class="sidebar_item" id="" onclick="app.setScale(app.scale/2)">
                         zoom-
                     </div>
             </div>
