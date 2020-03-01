@@ -158,12 +158,44 @@ function onKeyUp(e){
     }    
 }
 
+class Base{
+    constructor (wn){
+        this.items=[];
+        this.wn=wn;
+    }
+
+    add(name ,group){
+        var ni=new BaseItem;
+        ni.name=name;
+        ni.model=group.dublicate();
+        this.items.push(ni);
+    }
+    render(){
+        var ht="";
+        this.items.forEach((it)=>{
+            ht+=("<p>"+it.name+"</p>");
+        });
+        this.wn.innerHTML=ht;
+    }
+}
+
+class BaseItem{
+    constructor (){
+        this.name;
+        this.model;
+    }
+    pushBoard(){
+        //app.board.entries.push(app.base.items[0].model.dublicate())
+    }
+}
+
 class App {
     constructor (doc){
         this.canvasDOM=doc.getElementById("wnd");
         this.scrollDOM=doc.querySelector(".main");
         this.ctx=this.canvasDOM.getContext('2d');
-        
+        let wn=doc.querySelector(".basebar");
+        this.base=new Base(wn);
         this.selection = new Group();
         this.selPoints = new Spline();
         this.selectionPoints = [];
@@ -205,6 +237,7 @@ class App {
 
 
     render(){
+        this.base.render();
         var curToolIco=document.getElementById("tool"+this.tool);
         var toolIcons=document.querySelectorAll(".sidebar_item");
         toolIcons.forEach((it)=>it.style="");
@@ -769,6 +802,8 @@ class Vertex {
     }
 
 }
+
+
 
 ////////////UTILS//////////////
 function roundToStep(x, step){
