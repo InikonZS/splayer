@@ -48,9 +48,10 @@ function onDown(e){
     var dx=(e.pageX - app.canvasDOM.offsetLeft);
     var dy = (e.pageY - app.canvasDOM.offsetTop);
     if ((dx<0)||(dy<0)||(((e.pageX - app.canvasDOM.offsetLeft))>app.scrollDOM.clientWidth)||(((e.pageY - app.canvasDOM.offsetTop))>app.scrollDOM.clientHeight)) {return false;}
-
+    //console.log("mousedown");
     if (app.tool==0){
         if (e.buttons==1){
+            //console.log("cpgcp");
             var sel=app.selection.isPointHover(app.scale,app.cursor);
             if (sel){
                 if (!sel.selected){
@@ -67,12 +68,23 @@ function onDown(e){
 
                 }else{
                 var selc=app.board.isHover(app.scale,app.cursor)
+                //console.log("cpgc");
                 if (selc){
                     if (!selc.selected){
                         app.board.selectHovered();
                         app.selection.entries=app.board.selection;
                         //app.selection.push(selc);
                         selc.selected=true;   
+                    }//console.log("cpg");
+                    if (app.ctr==true){
+                        
+                        //var gr=new Group(app.ctx);
+                        app.selection.entries.forEach((it)=>{
+                            console.log("cp");
+                            //gr.entries.add(it.dublicate());
+                            app.board.entries.push(it.dublicate());
+                        })
+                        //app.selection=gr;
                     }
                     
                 } 
@@ -156,6 +168,7 @@ class App {
         this.selPoints = new Spline();
         this.selectionPoints = [];
         this.board = new Group();
+        this.board.main=true;
         this.ghostSpline = new Spline(this.ctx); 
         this.grid = new Grid(this.ctx, 8); 
         this.cursor = new Cursor(this.ctx); 
@@ -282,7 +295,9 @@ class Group {
     constructor (ctx){
         this.entries=[];
         this.type = "group"; 
+        this.main=false;
         this.ctx=ctx; 
+        this.de=true;
         //this.selectionPoints;
         this.selPoints=new Spline (this.ctx);
         this.selection = []; 
@@ -323,16 +338,59 @@ class Group {
         app.render();
     }
 
+    unGroupe(){
+        var res=[];
+        this.selection.forEach((it)=>{
+            if (it.type=="group"){
+                it.de=false;
+                it.entries.forEach((jt)=>{
+                    jt.de=true;
+                    this.entries.push(jt);
+                })
+            } else {it.de=true;}
+        });
+        this.entries.forEach((it)=>{
+            if (it.de!=false){
+                res.push(it);
+            }
+        });
+        this.selection=[];
+        this.entries=res;
+    }
+
+    setHover(hover){
+        this.hover=hover;
+        this.entries.forEach((it)=>{
+            if (it.type=="group"){it.setHover(hover);}
+            else{
+                it.hover=hover;
+            }
+        });    
+    }
+
+ /*   setSelect(hover){
+        this.selected=hover;
+        this.entries.forEach((it)=>{
+            if (it.type=="group"){it.setHover(hover);}
+            else{
+                it.selected=hover;
+            }
+        });    
+    }*/
+
     select(sc,cursor){
         res=false;
+        //this.hover=false;
+        this.setHover(false)
         this.entries.forEach((it)=>{
             res|=it.select(sc,cursor);
         });
         if (res){
-        this.entries.forEach((it)=>{
-            it.hover=true;
-        });
-        this.hover=true;
+        this.setHover(true);
+        //this.entries.forEach((it)=>{
+        //    it.hover=true;
+        //});
+        //this.hover=true;
         }
         return res;
     }
@@ -349,10 +407,20 @@ class Group {
         });
     }
 
+    dublicate(){
+        var res=new Group(this.ctx);
+        this.entries.forEach((it)=>{
+            res.entries.push(it.dublicate());
+        })
+        return res;
+    }
+
     selectHovered(){
         this.selection=[]
+        this.selected=this.hover;
         this.entries.forEach((it)=>{
-            it.selected=it.hover;
+            if (it.type=="group"){it.selectHovered()} else{
+            it.selected=it.hover;}
             if (it.selected){this.selection.push(it)};   
         });
     }
@@ -375,8 +443,10 @@ class Group {
   
     isMidle(sc,cursor){
         for (let i=0;i<this.entries.length;i++){
+            if (this.entries[i].type=="spline"){
             var index=this.entries[i].isMidle(sc,cursor);
             if (index){return this.entries[i];}
+        }
         } 
         return false;   
     }
@@ -404,8 +474,16 @@ class Group {
         return false;
     }
 
+    /*dublicate(){
+        var res=new Spline(this.ctx);
+        this.points.forEach((it)=>{
+            res.points.push(it.dublicate());
+        })
+        return res;
+    }*/
+
     render(sc){
-        this.entries.forEach((it)=>it.render(sc, false, it.hover,false));
+        this.entries.forEach((it)=>it.render(sc, false, it.hover,this.selected,!this.main));
     }
 }
 
@@ -415,6 +493,7 @@ class Spline {
         this.hovered=[];
         this.points=[];
         this.midIndex=0;
+        this.de=true;
         //this.midPoints=[];
         this.ghostPoint=new Vertex(0, 0); 
         this.hover=false;
@@ -571,8 +650,18 @@ class Spline {
        // return res;  
     }
 
-    render(sc, gh, hover, selected){
+    dublicate(){
+        var res=new Spline(this.ctx);
+        this.points.forEach((it)=>{
+            res.points.push(it.dublicate());
+        })
+        return res;
+    }
+
+    render(sc, gh, hover, selected, noMark){
         //this.getMidles();
+        var sll=this.selected;
+        this.selected|=selected;
         this.ctx.beginPath();
         this.ctx.strokeStyle="rgb(0,0,0)";
         if (hover){
@@ -591,7 +680,7 @@ class Spline {
             //let px=(this.points[i].x)*sc;
             //let py=(this.points[i].y)*sc;
             i==0 ? this.ctx.moveTo(px,py) : this.ctx.lineTo(px,py); 
-            if (this.selected){
+            if (this.selected&&(!noMark)){
                 this.points[i].render(this.ctx, sc);
                 if (i>0) {
 
@@ -610,6 +699,7 @@ class Spline {
             
         }
         this.ctx.stroke(); 
+        this.selected=sll;
     }
 }
 
@@ -659,6 +749,11 @@ class Vertex {
         let x=cursor.startPos.x;
         let y=cursor.startPos.y;
         return getSelMark(this.x,this.y,x,y,sc);
+    }
+
+    dublicate(){
+        var res=new Vertex(this.x, this.y);
+        return res;
     }
 
     render (ctx, sc){
