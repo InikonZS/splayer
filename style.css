@@ -29,6 +29,14 @@ float:left;
 .rightbar{
 padding: 0px 10px;
 float:left;
+width:200px;
+}
+.basebar{
+    padding: 0px 10px;
+    width:120px;
+    float:left;
+    overflow-y: scroll;
+    height: 400px;
 }
 .clearfix::after {
     content: "";

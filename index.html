@@ -16,15 +16,48 @@
                     <div class="sidebar_item" id="tool1" onclick="app.selTool(1); app.render();">
                         spline
                     </div>
-                    <div class="sidebar_item" id="tool1" onclick="app.setScale(app.scale*2)">
+                    <div class="sidebar_item" id="" onclick="app.board.groupe()">
+                        group
+                    </div>
+                    <div class="sidebar_item" id="" onclick="app.board.unGroupe()">
+                        ungroup
+                    </div>
+                    <div class="sidebar_item" id="" onclick="app.base.add('model',app.selection.dublicate()); app.render();">
+                        to base
+                    </div>
+                    <div class="sidebar_item" id="" onclick="if (app.base.selection){app.board.entries.push(app.base.items[app.base.selIndex].model.dublicate()); app.render();}">
+                        from base
+                    </div>
+                    <div class="sidebar_item" id="" onclick="app.setScale(app.scale*2)">
                         zoom+
                     </div>
-                    <div class="sidebar_item" id="tool1" onclick="app.setScale(app.scale/2)">
+                    <div class="sidebar_item" id="" onclick="app.setScale(app.scale/2)">
                         zoom-
                     </div>
             </div>
             <div class="main">
                 <canvas width="800px" height="700px" id="wnd" oncontextmenu="return false"></canvas> 
+            </div>
+            <div class="basebar">
+                    <p>sdfg</p>
+                    <p>gdfg</p>
+                    <p>Clicgf</p>
+                    <p>Presfg</p>
+                    <p>Use toog</p>
+                    <p>Use tode</p>
+                    <p>sdfg</p>
+                    <p>gdfg</p>
+                    <p>Clicgf</p>
+                    <p>Presfg</p>
+                    <p>Use toog</p>
+                    <p>Use tode</p>
+                    <p>sdfg</p>
+                    <p>gdfg</p>
+                    <p>Clicgf</p>
+                    <p>Presfg</p>
+                    <p>Use toog</p>
+                    <p>Use tode</p>
+                    
             </div>
             <div class="rightbar">
                     <p>Click left mouse button to draw spline</p>
