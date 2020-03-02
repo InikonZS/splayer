@@ -220,6 +220,11 @@ class App {
         this.tool=0;
         this.state=0;  
     }
+
+    download(){
+        downloadImage(this.ctx.canvas.toDataURL(), "filename.png");
+    }
+
     setScale(scn){
         scn=Math.trunc(scn);
         if (scn>=1){
@@ -251,6 +256,11 @@ class App {
     render(){
         this.base.render();
         var curToolIco=document.getElementById("tool"+this.tool);
+        var lineWidthOut=document.getElementById("wid");
+        if (this.selection.entries[0]){
+           lineWidthOut.innerHTML=this.selection.getWidth(); 
+        }
+        //
         var toolIcons=document.querySelectorAll(".sidebar_item");
         toolIcons.forEach((it)=>it.style="");
         curToolIco.style="background-color:rgb(80,80,80)";
@@ -518,6 +528,19 @@ class Group {
         }
         return false;
     }
+    setWidth(wdt){
+        this.entries.forEach((it)=>{
+            it.setWidth(wdt);
+        })
+    }
+    getWidth(){
+        var res;
+        for (let i=0;i<this.entries.length;i++){
+            var it=this.entries[i];
+            if (it.type=="spline"){res=it.width} else{res=it.getWidth();}
+            if (res){return res;}
+        }   
+    }
 
     /*dublicate(){
         var res=new Spline(this.ctx);
@@ -547,6 +570,10 @@ class Spline {
         this.selected=false;
         this.type = "spline";
         
+    }
+
+    setWidth(wdt){
+        this.width=wdt;
     }
 
     move (cursor){
@@ -602,14 +629,28 @@ class Spline {
     }
 
     _hover(sc, x, y){
-        for (let i=1; i<this.points.length; i++){
+       /* for (let i=1; i<this.points.length; i++){
             let px=this.points[i].x;
             let py=this.points[i].y;
             let ex=this.points[i-1].x;
             let ey=this.points[i-1].y;
             if (getSel(px,py,ex,ey,x,y,sc)) {return true};
         }
-        return false;    
+        return false;    */
+        let cs=false;
+        for (let i=0; i<this.points.length; i++){
+            
+            let px=this.points[i].x;
+            let py=this.points[i].y;
+            if (i>0){
+                let ex=this.points[i-1].x;
+                let ey=this.points[i-1].y;
+                cs|=getSel(px,py,ex,ey,x,y,sc);
+            } else {
+                cs|=getSelMark(px,py,x,y,sc);    
+            }
+        }
+        return cs;
     }
 
     isHover(sc, cursor){
@@ -639,6 +680,8 @@ class Spline {
                 let ex=this.points[i-1].x;
                 let ey=this.points[i-1].y;
                 cs|=getSel(px,py,ex,ey,x,y,sc);
+            } else {
+                cs|=getSelMark(px,py,x,y,sc);    
             }
             
             if (cursor.cloud){
@@ -736,14 +779,14 @@ class Spline {
         if (this.pad&&this.points[0]){
             //this.ctx.lineWidth=1;
             this.ctx.beginPath();
-            this.ctx.arc(this.points[0].x*sc,this.points[0].y*sc,5*sc,0,Math.PI*2);
+            this.ctx.arc((this.points[0].x+this.points[0].mx)*sc,(this.points[0].y+this.points[0].my)*sc,5*sc,0,Math.PI*2);
             this.ctx.fillStyle="rgb(50,100,0)";
             this.ctx.fill();
            // this.ctx.stroke();
             this.ctx.closePath();
             //this.ctx.stroke
             this.ctx.beginPath();
-            this.ctx.arc(this.points[0].x*sc,this.points[0].y*sc,1*sc,0,Math.PI*2);
+            this.ctx.arc((this.points[0].x+this.points[0].mx)*sc,(this.points[0].y+this.points[0].my)*sc,1*sc,0,Math.PI*2);
             this.ctx.fillStyle="rgb(0,0,0)";
             this.ctx.fill();
             //this.ctx.stroke();
@@ -993,3 +1036,12 @@ function solveLines(x1,y1,x2,y2,x3,y3,x4,y4,sc){
 function getSelMark(x1,y1,x3,y3, sc){
     return (getDist(x1,y1,x3,y3)<(10/sc)); 
 }
+
+//downloadImage(canvas.toDataURL(), filename);
+function downloadImage (data, filename) {
+    var a = document.createElement('a');
+    a.href = data;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+};
