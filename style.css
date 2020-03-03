@@ -38,6 +38,11 @@ width:200px;
     overflow-y: scroll;
     height: 400px;
 }
+.sidebar_item_s{
+    width:30%; 
+    float:left;
+    text-align: center;
+}
 .clearfix::after {
     content: "";
     display: table;

@@ -220,6 +220,11 @@ class App {
         this.tool=0;
         this.state=0;  
     }
+
+    download(){
+        downloadImage(this.ctx.canvas.toDataURL(), "filename.png");
+    }
+
     setScale(scn){
         scn=Math.trunc(scn);
         if (scn>=1){
@@ -251,6 +256,11 @@ class App {
     render(){
         this.base.render();
         var curToolIco=document.getElementById("tool"+this.tool);
+        var lineWidthOut=document.getElementById("wid");
+        if (this.selection.entries[0]){
+           lineWidthOut.innerHTML=this.selection.getWidth(); 
+        }
+        //
         var toolIcons=document.querySelectorAll(".sidebar_item");
         toolIcons.forEach((it)=>it.style="");
         curToolIco.style="background-color:rgb(80,80,80)";
@@ -518,6 +528,19 @@ class Group {
         }
         return false;
     }
+    setWidth(wdt){
+        this.entries.forEach((it)=>{
+            it.setWidth(wdt);
+        })
+    }
+    getWidth(){
+        var res;
+        for (let i=0;i<this.entries.length;i++){
+            var it=this.entries[i];
+            if (it.type=="spline"){res=it.width} else{res=it.getWidth();}
+            if (res){return res;}
+        }   
+    }
 
     /*dublicate(){
         var res=new Spline(this.ctx);
@@ -547,6 +570,10 @@ class Spline {
         this.selected=false;
         this.type = "spline";
         
+    }
+
+    setWidth(wdt){
+        this.width=wdt;
     }
 
     move (cursor){
@@ -602,14 +629,28 @@ class Spline {
     }
 
     _hover(sc, x, y){
-        for (let i=1; i<this.points.length; i++){
+       /* for (let i=1; i<this.points.length; i++){
             let px=this.points[i].x;
             let py=this.points[i].y;
             let ex=this.points[i-1].x;
             let ey=this.points[i-1].y;
             if (getSel(px,py,ex,ey,x,y,sc)) {return true};
         }
-        return false;    
+        return false;    */
+        let cs=false;
+        for (let i=0; i<this.points.length; i++){
+            
+            let px=this.points[i].x;
+            let py=this.points[i].y;
+            if (i>0){
+                let ex=this.points[i-1].x;
+                let ey=this.points[i-1].y;
+                cs|=getSel(px,py,ex,ey,x,y,sc);
+            } else {
+                cs|=getSelMark(px,py,x,y,sc);    
+            }
+        }
+        return cs;
     }
 
     isHover(sc, cursor){
@@ -639,6 +680,8 @@ class Spline {
                 let ex=this.points[i-1].x;
                 let ey=this.points[i-1].y;
                 cs|=getSel(px,py,ex,ey,x,y,sc);
+            } else {
+                cs|=getSelMark(px,py,x,y,sc);    
             }
             
             if (cursor.cloud){
@@ -732,22 +775,22 @@ class Spline {
         if (this.selected){
             this.ctx.strokeStyle="rgb(255,0,0)";
         }
-        
+        //to do draw pads upper 
         if (this.pad&&this.points[0]){
             //this.ctx.lineWidth=1;
             this.ctx.beginPath();
-            this.ctx.arc(this.points[0].x*sc,this.points[0].y*sc,5*sc,0,Math.PI*2);
+            this.ctx.arc((this.points[0].x+this.points[0].mx)*sc,(this.points[0].y+this.points[0].my)*sc,5*sc,0,Math.PI*2);
             this.ctx.fillStyle="rgb(50,100,0)";
             this.ctx.fill();
            // this.ctx.stroke();
             this.ctx.closePath();
             //this.ctx.stroke
             this.ctx.beginPath();
-            this.ctx.arc(this.points[0].x*sc,this.points[0].y*sc,1*sc,0,Math.PI*2);
+            this.ctx.arc((this.points[0].x+this.points[0].mx)*sc,(this.points[0].y+this.points[0].my)*sc,1*sc,0,Math.PI*2);
             this.ctx.fillStyle="rgb(0,0,0)";
             this.ctx.fill();
-            this.ctx.stroke();
-            //this.ctx.closePath();
+            //this.ctx.stroke();
+            this.ctx.closePath();
             //this.ctx.lineWidth=this.width*sc;
         }
        // if (this.selected){
@@ -760,7 +803,7 @@ class Spline {
             //let px=(this.points[i].x)*sc;
             //let py=(this.points[i].y)*sc;
             i==0 ? this.ctx.moveTo(px,py) : this.ctx.lineTo(px,py); 
-            if (this.selected&&(!noMark)){
+          /*  if (this.selected&&(!noMark)){
                 this.points[i].render(this.ctx, sc);
                 if (i>0) {
 
@@ -770,7 +813,7 @@ class Spline {
                     nd.y=roundToStep(nd.y,app.grid.step);
                     a.hover=nd.isHover(sc,app.cursor);
                     a.render(this.ctx,sc);}
-            }
+            }*/
         }
         if (gh){
             if (this.points.length>0){
@@ -805,6 +848,20 @@ class Spline {
             
         }
         this.ctx.stroke(); 
+        for (let i=0; i<this.points.length; i++){
+            if (this.selected&&(!noMark)){
+                this.points[i].render(this.ctx, sc);
+                if (i>0) {
+
+                    let a=this.getMidle(i);
+                    let nd=this.getMidle(i);
+                    nd.x=roundToStep(nd.x,app.grid.step);
+                    nd.y=roundToStep(nd.y,app.grid.step);
+                    a.hover=nd.isHover(sc,app.cursor);
+                    a.render(this.ctx,sc,true);}
+            }
+        }
+
         this.selected=sll;
      this.ctx.lineWidth=1;   
     }
@@ -891,7 +948,7 @@ class Vertex {
         return res;
     }
 
-    render (ctx, sc){
+    render (ctx, sc, rd){
         ctx.fillStyle="rgb(0,0,0)";
         if (this.hover){
             ctx.fillStyle="rgb(200,150,0)";    
@@ -900,7 +957,20 @@ class Vertex {
             ctx.fillStyle="rgb(0,255,0)";    
         }
         //ctx.fillRect(this.x*sc-5,this.y*sc-5,5,5);
-        ctx.fillRect((this.mx+this.x)*sc-5,(this.my+this.y)*sc-5,5,5);
+        if (!rd){
+            ctx.fillRect((this.mx+this.x)*sc-3,(this.my+this.y)*sc-3,6,6);
+        }
+        else{
+            if (this.hover){
+                ctx.fillStyle="rgb(0,0,150)";    
+            }else{ctx.fillStyle="rgb(0,0,80)";}
+            ctx.beginPath();
+            ctx.arc(this.x*sc,this.y*sc,3,0,Math.PI*2);
+            
+            ctx.fill();
+            //this.ctx.stroke();
+            ctx.closePath();
+        }
     }
 
 }
@@ -966,3 +1036,12 @@ function solveLines(x1,y1,x2,y2,x3,y3,x4,y4,sc){
 function getSelMark(x1,y1,x3,y3, sc){
     return (getDist(x1,y1,x3,y3)<(10/sc)); 
 }
+
+//downloadImage(canvas.toDataURL(), filename);
+function downloadImage (data, filename) {
+    var a = document.createElement('a');
+    a.href = data;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+};
