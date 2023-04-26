@@ -1,11 +1,16 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {AppLegacy} from './lines';
 
 export function App(){
     const [app, setApp] = useState<AppLegacy>(null);
+    const [base, setBase] = useState<Array<string>>([]);
+    const [baseSelected, setBaseSelected] = useState(-1);
     const [tool, setTool] = useState<number>(0);
+    const canvasRef = useRef<HTMLCanvasElement>();
+    const scrollRef = useRef<HTMLDivElement>();
+
     useEffect(()=>{
-        const applegacy = new AppLegacy(document);
+        const applegacy = new AppLegacy(document, canvasRef.current, scrollRef.current);
         applegacy.render();
         setApp(applegacy);
     },[])
@@ -26,16 +31,19 @@ export function App(){
                 <div className={"sidebar_item" + (tool==1 ? " selected": "")} id="tool1" onClick={()=>{setTool(1)}}>
                     spline
                 </div>
-                <div className="sidebar_item" id="" onClick={()=>{"app.board.groupe()"}}>
+                <div className="sidebar_item" id="" onClick={()=>{app.board.groupe()}}>
                     group
                 </div>
-                <div className="sidebar_item" id="" onClick={()=>{"app.board.unGroupe()"}}>
+                <div className="sidebar_item" id="" onClick={()=>{app.board.unGroupe()}}>
                     ungroup
                 </div>
-                <div className="sidebar_item" id="" onClick={()=>{"app.base.add('model',app.selection.dublicate()); app.render();"}}>
+                <div className="sidebar_item" id="" onClick={()=>{setBase(last=>[...last, last.length.toString()]); app.base.add('model',app.selection.dublicate()); app.render();}}>
                     to base
                 </div>
-                <div className="sidebar_item" id="" onClick={()=>{"if (app.base.selection){app.board.entries.push(app.base.items[app.base.selIndex].model.dublicate()); app.render();}"}}>
+                <div className="sidebar_item" id="" onClick={()=>{
+                    //app.base.select(' + i + ')
+                    if (baseSelected!=-1){app.board.entries.push(app.base.items[baseSelected].model.dublicate()); app.render();}
+                    }}>
                     from base
                 </div>
                 <div className="sidebar_item clearfix" id="" >
@@ -49,36 +57,24 @@ export function App(){
                     +    
                     </div>       
                 </div>
-                <div className="sidebar_item" id="" onClick={()=>{"app.setScale(app.scale*2)"}}>
+                <div className="sidebar_item" id="" onClick={()=>{app.setScale(app.scale*2)}}>
                     zoom+
                 </div>
-                <div className="sidebar_item" id="" onClick={()=>{"app.setScale(app.scale/2)"}}>
+                <div className="sidebar_item" id="" onClick={()=>{app.setScale(app.scale/2)}}>
                     zoom-
                 </div>
         </div>
-        <div className="main">
-            <canvas width="800px" height="700px" id="wnd" onContextMenu={(e)=>{e.preventDefault()}}></canvas> 
+        <div ref={scrollRef} className="main">
+            <canvas ref={canvasRef} width="800px" height="700px" id="wnd" onContextMenu={(e)=>{e.preventDefault()}}></canvas> 
         </div>
         <div className="basebar">
-                <p>sdfg</p>
-                <p>gdfg</p>
-                <p>Clicgf</p>
-                <p>Presfg</p>
-                <p>Use toog</p>
-                <p>Use tode</p>
-                <p>sdfg</p>
-                <p>gdfg</p>
-                <p>Clicgf</p>
-                <p>Presfg</p>
-                <p>Use toog</p>
-                <p>Use tode</p>
-                <p>sdfg</p>
-                <p>gdfg</p>
-                <p>Clicgf</p>
-                <p>Presfg</p>
-                <p>Use toog</p>
-                <p>Use tode</p>
-                
+            {base.map((item, index)=>{
+                return (
+                    <div className={index == baseSelected ? "selected" : ""} onClick={()=>setBaseSelected(index)}>
+                        {item}
+                    </div>
+                )
+            })}
         </div>
         <div className="rightbar">
                 <p>Click left mouse button to draw spline</p>

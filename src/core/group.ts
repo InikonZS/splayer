@@ -6,12 +6,12 @@ export class Group {
     entries: (Spline|Group)[];
     type: string;
     main: boolean;
-    ctx: any;
+    ctx: CanvasRenderingContext2D;
     de: boolean;
     selPoints: Spline;
-    selection: any[];
-    hover: any;
-    selected: any;
+    selection: (Spline | Group)[];
+    hover: boolean;
+    selected: boolean;
     
     constructor(ctx: CanvasRenderingContext2D) {
         this.entries = [];
@@ -221,6 +221,9 @@ export class Group {
     }*/
 
     render(sc: number, cursor: Cursor, step: number) {
-        this.entries.forEach((it) => it.render(sc, false, it.hover, this.selected, !this.main, cursor, step));
+        this.entries.forEach((it) => {
+            if ((it instanceof Spline) && it.type == "spline") { it.render(sc, false, it.hover, this.selected, !this.main, cursor, step) } 
+            if ((it instanceof Group) && it.type == "group") { it.render(sc, cursor, step) }     
+        });
     }
 }

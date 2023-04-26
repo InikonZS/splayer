@@ -169,13 +169,13 @@ function onKeyUp(app: AppLegacy, e:KeyboardEvent) {
 }
 
 class Base {
-    items: any[];
-    wn: any;
-    selection: any;
-    selIndex: any;
-    constructor(wn: HTMLElement) {
+    items: BaseItem[];
+    //wn: any;
+    selection: BaseItem;
+    selIndex: number;
+    constructor(/*wn: HTMLElement*/) {
         this.items = [];
-        this.wn = wn;
+        //this.wn = wn;
         this.selection;
         this.selIndex;
     }
@@ -190,7 +190,7 @@ class Base {
         this.selIndex = index;
         this.selection = this.items[index];
     }
-    render() {
+    /*render() {
         var ht = "";
         this.items.forEach((it, i) => {
             let st = "";
@@ -199,7 +199,7 @@ class Base {
             ht += ('<p onclick="app.base.select(' + i + ')" ' + st + '>' + it.name + '</p>');
         });
         this.wn.innerHTML = ht;
-    }
+    }*/
 }
 
 class BaseItem {
@@ -231,12 +231,12 @@ export class AppLegacy {
     state: number;
     cursor: Cursor;
 
-    constructor(doc: Document) {
-        this.canvasDOM = <HTMLCanvasElement>doc.getElementById("wnd");
-        this.scrollDOM = doc.querySelector(".main");
+    constructor(doc: Document, canvas: HTMLCanvasElement, scroll: HTMLDivElement) {
+        this.canvasDOM = canvas;//<HTMLCanvasElement>doc.getElementById("wnd");
+        this.scrollDOM = scroll;//doc.querySelector(".main");
         this.ctx = this.canvasDOM.getContext('2d');
-        let wn = doc.querySelector<HTMLDivElement>(".basebar");
-        this.base = new Base(wn);
+        //let wn = doc.querySelector<HTMLDivElement>(".basebar");
+        this.base = new Base();
         this.selection = new Group(this.ctx);
         this.selPoints = new Spline(this.ctx);
         this.selectionPoints = [];
@@ -288,12 +288,12 @@ export class AppLegacy {
 
 
     render() {
-        this.base.render();
+        //this.base.render();
         //var curToolIco = document.getElementById("tool" + this.tool);
-        var lineWidthOut = document.getElementById("wid");
+        /*var lineWidthOut = document.getElementById("wid");
         if (this.selection.entries[0]) {
             lineWidthOut.innerHTML = this.selection.getWidth().toString();
-        }
+        }*/
         //
         //var toolIcons = document.querySelectorAll(".sidebar_item");
         //toolIcons.forEach((it) => it.style = "");

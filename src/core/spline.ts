@@ -10,7 +10,7 @@ export class Spline {
     width: number;
     pad: boolean;
     de: boolean;
-    ghostPoint: any;
+    ghostPoint: Vertex;
     hover: boolean;
     selected: boolean;
     type: string;
