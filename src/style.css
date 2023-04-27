@@ -1,8 +1,20 @@
+*{
+    box-sizing: border-box;
+}
+
+body{
+    margin: 0;
+    padding: 0;
+}
+
 .wrapper {
     font-family: Arial, Helvetica, sans-serif;
-    font-size: 12pt;
+    font-size: 12px;
     color: rgb(200, 200, 200);
-    background-color: rgb(70, 70, 70)
+    background-color: rgb(70, 70, 70);
+    width: 100%;
+    height: 100vh;
+    display: flex;
 }
 
 .toolbar {
@@ -12,6 +24,8 @@
 .sidebar {
     float: left;
     width: 70px;
+    background-color: #222;
+    flex-shrink: 0;
 }
 
 .sidebar_item {
@@ -27,34 +41,74 @@
 }
 
 .main {
-    width: 600px;
-    height: 400px;
-    overflow: auto;
-    float: left;
+    width: 100%;
+    height: 100%;
+    overflow: scroll;
 }
 
 .rightbar {
     padding: 0px 10px;
-    float: left;
     width: 200px;
 }
 
 .basebar {
     padding: 0px 10px;
     width: 120px;
-    float: left;
     overflow-y: scroll;
-    height: 400px;
+    height: 100%;
+    flex-shrink: 0;
 }
 
-.sidebar_item_s {
-    width: 30%;
-    float: left;
+.sidebar_item_name {
+    margin-bottom: 5px;
+}
+
+.sidebar_item_button{
+    width: 15px;
     text-align: center;
+    padding: 5px;
+    background-color: #111;
+    color: #fff;
+    text-decoration: none;
+    display: block;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: none;
+    margin:0;
 }
 
-.clearfix::after {
-    content: "";
-    display: table;
-    clear: both;
+.sidebar_item_value{
+    width: 100%;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.sidebar_item_controls{
+    display: flex;
+    gap: 5px;
+}
+
+.preview_block{
+    width: 100%;
+    background-color: #ccc;
+}
+
+.preview_block svg{
+    width: 100%;
+}
+
+.download{
+    padding: 5px;
+    background-color: #222;
+    color: #fff;
+    text-decoration: none;
+    display: block;
+    margin: 5px;
+}
+.download:visited{
+    color: #fff;
+    text-decoration: none;
 }

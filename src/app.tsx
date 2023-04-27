@@ -61,16 +61,19 @@ export function App(){
                     </div>       
                 </div>
                 <div className="sidebar_item clearfix" id="" >
-                    <div>gridStep</div>
-                    <div className="sidebar_item_s" onClick={()=>{setGridStep(last => last / 2)}} >
-                    -    
-                    </div> 
-                    <div className="sidebar_item_s" >
-                        {gridStep}    
-                    </div>    
-                    <div className="sidebar_item_s" onClick={()=>{setGridStep(last => last * 2)}} >
-                    +    
-                    </div>       
+                    <div className="sidebar_item_name">gridStep</div>
+                    <div className="sidebar_item_controls">
+                        <button className="sidebar_item_button" onClick={()=>{setGridStep(last => last / 2)}} >
+                        -    
+                        </button> 
+                        <div className="sidebar_item_value" >
+                            {gridStep}    
+                        </div>    
+                        <button className="sidebar_item_button" onClick={()=>{setGridStep(last => last * 2)}} >
+                        +    
+                        </button>      
+                    </div>
+ 
                 </div>
                 <div className="sidebar_item" id="" onClick={()=>{app.setScale(app.scale*2)}}>
                     zoom+
@@ -104,13 +107,25 @@ export function App(){
             })}
         </div>
         <div className="rightbar">
+            <div>
                 <p>Click left mouse button to draw spline</p>
                 <p>Click right button to finish spline</p>
                 <p>Click right button to select spline and drag markers to edit it</p>
                 <p>Press Delete button to delete selected spline</p>
                 <p>Use tool Select to edit spline by left button</p>
                 <p>Use tool Spline to draw new spline</p>
-                <div dangerouslySetInnerHTML={{__html: svg}}></div>
+            </div>
+            <div>
+                <div>Preview:</div>
+                <div className="preview_block" dangerouslySetInnerHTML={{__html: svg}}></div> 
+                <div>
+                    <a className="download" download="image.svg" href={'data:image/svg+xml;base64,'+btoa(svg)}>download (base)</a> 
+                </div>
+                <div>
+                    <a className="download" download="image.svg" href={URL.createObjectURL(new Blob([svg], {type:'image/svg+xml'}))}>download (blob)</a>  
+                </div>
+                
+            </div> 
         </div>
     </div>
     )

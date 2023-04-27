@@ -291,7 +291,7 @@ export class AppLegacy {
 
     getSvg(){
         let content = this.board.getSvg();
-        return `<svg fill=none stroke="#000"> ${content}</svg>`;
+        return `<svg version="1.0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${Math.floor(this.canvasDOM.width / this.scale)} ${Math.floor(this.canvasDOM.height / this.scale)}" fill="none" stroke="#000"> ${content}</svg>`;
     }
 
     private parseGroup(group: Group, node: SVGGElement | SVGSVGElement){
