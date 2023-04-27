@@ -12,6 +12,7 @@ import { Vertex } from './core/vertex';
 import { Spline } from './core/spline';
 import { Group } from './core/group';
 import { Cursor } from './core/cursor';
+import { parsePath } from './svglib/pathParser';
 
 /*function onReady() {
     app = new App(document);
@@ -289,6 +290,49 @@ export class AppLegacy {
     getSvg(){
         let content = this.board.getSvg();
         return `<svg fill=none stroke="#000"> ${content}</svg>`;
+    }
+
+    private parseGroup(group: Group, node: SVGGElement | SVGSVGElement){
+        node.childNodes.forEach(node=>{
+            if (node instanceof SVGGElement){
+                const childGroup = new Group(this.ctx);
+                console.log('loaded group ', childGroup)
+                this.parseGroup(childGroup, node);
+                group.entries.push(childGroup);
+            } else if (node instanceof SVGPathElement){
+                this.parseSpline(group, node);
+            }
+        })
+    }
+
+    private parseSpline(group: Group, node: SVGPathElement){
+        const spline = new Spline(this.ctx);
+        const path = parsePath(node.getAttribute('d'));
+        console.log(path)
+        path.forEach(step=>{
+            if (step.tag == 'M' || step.tag == 'L'){
+                spline.points.push(new Vertex(step.args[0], step.args[1]));
+            }
+        })
+        console.log('loaded spline ', spline);
+        group.entries.push(spline);
+    }
+
+    setSvg(text: string){
+        const el = document.createElement('div');
+        el.innerHTML = text;
+        const svg = el.querySelector('svg');
+        console.log(svg);
+        const root = new Group(this.ctx);
+        this.parseGroup(root, svg);
+        this.board.entries.push(root);
+        /*svg.childNodes.forEach(node=>{
+            if (node instanceof SVGGElement){
+                
+            } else if (node instanceof SVGPathElement){
+                
+            }
+        })*/
     }
 
     render() {

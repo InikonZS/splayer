@@ -69,7 +69,12 @@ export function App(){
                     console.log(res);
                     setSvg(res);
                 }}>
-                    svg
+                    save svg
+                </div>
+                <div onClick={()=>{
+                    const res = app.setSvg(svg);
+                }}>
+                    load svg
                 </div>
         </div>
         <div ref={scrollRef} className="main">
