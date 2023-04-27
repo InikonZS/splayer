@@ -9,6 +9,7 @@ export function App(){
     const canvasRef = useRef<HTMLCanvasElement>();
     const scrollRef = useRef<HTMLDivElement>();
     const [svg, setSvg] = useState('');
+    const [gridStep, setGridStep] = useState(8);
  
     useEffect(()=>{
         const applegacy = new AppLegacy(document, canvasRef.current, scrollRef.current);
@@ -18,9 +19,10 @@ export function App(){
     useEffect(()=>{
         if (app){
             app.selTool(tool); 
+            app.setGridStep(gridStep);
             app.render();
         }
-    }, [app, tool]);
+    }, [app, tool, gridStep]);
     return (
         <div className="wrapper clearfix">
         <div className="toolbar">
@@ -55,6 +57,18 @@ export function App(){
                             w    
                     </div>    
                     <div className="sidebar_item_s"  id="" >
+                    +    
+                    </div>       
+                </div>
+                <div className="sidebar_item clearfix" id="" >
+                    <div>gridStep</div>
+                    <div className="sidebar_item_s" onClick={()=>{setGridStep(last => last / 2)}} >
+                    -    
+                    </div> 
+                    <div className="sidebar_item_s" >
+                        {gridStep}    
+                    </div>    
+                    <div className="sidebar_item_s" onClick={()=>{setGridStep(last => last * 2)}} >
                     +    
                     </div>       
                 </div>

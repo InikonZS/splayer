@@ -123,9 +123,9 @@ export class Group {
         });
     }
 
-    applyMove() {
+    applyMove(step: number) {
         this.entries.forEach((it) => {
-            it.applyMove();
+            it.applyMove(step);
         });
     }
 

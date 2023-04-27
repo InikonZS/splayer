@@ -12,6 +12,7 @@ import { Vertex } from './core/vertex';
 import { Spline } from './core/spline';
 import { Group } from './core/group';
 import { Cursor } from './core/cursor';
+import { Grid } from './core/grid';
 import { parsePath } from './svglib/pathParser';
 
 /*function onReady() {
@@ -23,6 +24,7 @@ function onMove(app: AppLegacy, e:MouseEvent) {
     var cx = (e.pageX - app.canvasDOM.offsetLeft) + app.scrollDOM.scrollLeft;
     var cy = (e.pageY - app.canvasDOM.offsetTop) + app.scrollDOM.scrollTop;
     app.setCursorPosition(cx, cy);
+    //console.log(app.cursor.gridPosition);
 
     if (app.tool == 0) {
         if (e.buttons == 1) {
@@ -143,8 +145,8 @@ function onUp(app: AppLegacy, e:MouseEvent) {
             app.selection.selectHoveredPoints();
         }
         //применяем перемещение
-        app.selection.selPoints.applyMove();
-        app.selection.applyMove();
+        app.selection.selPoints.applyMove(app.grid.step);
+        app.selection.applyMove(app.grid.step);
 
     }
     //app.cursor.hidden=false;
@@ -318,6 +320,11 @@ export class AppLegacy {
         group.entries.push(spline);
     }
 
+    setGridStep(step: number){
+        this.grid.step = step;
+        this.render();
+    }
+
     setSvg(text: string){
         const el = document.createElement('div');
         el.innerHTML = text;
@@ -326,13 +333,7 @@ export class AppLegacy {
         const root = new Group(this.ctx);
         this.parseGroup(root, svg);
         this.board.entries.push(root);
-        /*svg.childNodes.forEach(node=>{
-            if (node instanceof SVGGElement){
-                
-            } else if (node instanceof SVGPathElement){
-                
-            }
-        })*/
+        this.render();
     }
 
     render() {
@@ -357,32 +358,6 @@ export class AppLegacy {
         this.board.entries.forEach((it) => { if ((it instanceof Spline) && it.type == "spline") { if (it.selected) { it.selectMarker(this.scale, this.cursor) } } });
         this.board.render(this.scale, this.cursor, this.grid.step);
     }
-}
-
-class Grid {
-    step: number;
-    ctx: CanvasRenderingContext2D;
-
-    constructor(ctx: CanvasRenderingContext2D, step: number) {
-        this.step = step;
-        this.ctx = ctx;
-    }
-
-    render(sc: number) {
-        console.log('grid')
-        this.ctx.beginPath();
-        this.ctx.strokeStyle = "rgb(90,90,90)";
-        for (let i = 0; i < this.ctx.canvas.width; i += this.step * sc) {
-            this.ctx.moveTo(i, 0);
-            this.ctx.lineTo(i, this.ctx.canvas.height);
-        }
-        for (let i = 0; i < this.ctx.canvas.height; i += this.step * sc) {
-            this.ctx.moveTo(0, i);
-            this.ctx.lineTo(this.ctx.canvas.width, i);
-        }
-        this.ctx.stroke();
-    }
-
 }
 
 class Sprite {

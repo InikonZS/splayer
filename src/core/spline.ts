@@ -41,9 +41,9 @@ export class Spline {
         });
     }
 
-    applyMove() {
+    applyMove(step: number) {
         this.points.forEach((it) => {
-            it.applyMove()
+            it.applyMove(step)
         });
     }
 
@@ -184,8 +184,8 @@ export class Spline {
     isMidle(sc:number, cursor: Cursor, step: number) {
         for (let i = 1; i < this.points.length; i++) {
             let gm = this.getMidle(i);
-            let px = roundToStep(gm.x, step);//app.grid.step)
-            let py = roundToStep(gm.y, step);//app.grid.step);
+            let px = gm.x;//roundToStep(gm.x, step);//app.grid.step)
+            let py = gm.y;//roundToStep(gm.y, step);//app.grid.step);
             let x = cursor.realPosition.x;
             let y = cursor.realPosition.y;
             let hov = getSelMark(px, py, x, y, sc)

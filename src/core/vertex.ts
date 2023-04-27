@@ -1,4 +1,4 @@
-import { getSelMark } from "../utils";
+import { getSelMark, roundToStep } from "../utils";
 import { Cursor } from "./cursor";
 
 export class Vertex {
@@ -30,9 +30,15 @@ export class Vertex {
         this.my = cursor.gridPosition.y - cursor.gridStartPos.y;
     }
 
-    applyMove() {
-        this.x += this.mx;
-        this.y += this.my;
+    applyMove(step: number) {
+        this.x = this.x + this.mx;
+        this.y = this.y + this.my;
+        /*if ( this.mx ){
+            this.x = roundToStep(this.x + this.mx, step);
+        }
+        if (this.my){
+            this.y = roundToStep(this.y + this.my, step);
+        }*/
         this.my = 0;
         this.mx = 0;
     }
