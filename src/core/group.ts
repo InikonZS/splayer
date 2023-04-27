@@ -226,4 +226,12 @@ export class Group {
             if ((it instanceof Group) && it.type == "group") { it.render(sc, cursor, step) }     
         });
     }
+
+    getSvg(){
+        let svgContent = '';
+        this.entries.forEach((it) => {
+            svgContent += ' '+ it.getSvg();
+        });
+        return `<g>${svgContent}</g>`
+    }
 }

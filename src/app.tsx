@@ -8,7 +8,8 @@ export function App(){
     const [tool, setTool] = useState<number>(0);
     const canvasRef = useRef<HTMLCanvasElement>();
     const scrollRef = useRef<HTMLDivElement>();
-
+    const [svg, setSvg] = useState('');
+ 
     useEffect(()=>{
         const applegacy = new AppLegacy(document, canvasRef.current, scrollRef.current);
         applegacy.render();
@@ -63,6 +64,13 @@ export function App(){
                 <div className="sidebar_item" id="" onClick={()=>{app.setScale(app.scale/2)}}>
                     zoom-
                 </div>
+                <div onClick={()=>{
+                    const res = app.getSvg();
+                    console.log(res);
+                    setSvg(res);
+                }}>
+                    svg
+                </div>
         </div>
         <div ref={scrollRef} className="main">
             <canvas ref={canvasRef} width="800px" height="700px" id="wnd" onContextMenu={(e)=>{e.preventDefault()}}></canvas> 
@@ -83,6 +91,7 @@ export function App(){
                 <p>Press Delete button to delete selected spline</p>
                 <p>Use tool Select to edit spline by left button</p>
                 <p>Use tool Spline to draw new spline</p>
+                <div dangerouslySetInnerHTML={{__html: svg}}></div>
         </div>
     </div>
     )

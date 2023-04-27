@@ -286,6 +286,10 @@ export class AppLegacy {
         this.tool = tool;
     }
 
+    getSvg(){
+        let content = this.board.getSvg();
+        return `<svg fill=none stroke="#000"> ${content}</svg>`;
+    }
 
     render() {
         //this.base.render();

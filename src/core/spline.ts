@@ -354,4 +354,16 @@ export class Spline {
         return [px1, py1];
     }
 
+    getSvg(){
+        let pathContent = '';
+        this.points.map((point, i)=>{
+            if (i==0){
+                pathContent+= `M${point.x} ${point.y} `;
+            } else {
+                pathContent+= `L${point.x} ${point.y} `;
+            }
+        });
+        return `<path d="${pathContent}" />`
+    }
+
 }
