@@ -122,6 +122,23 @@ export function App(){
                 <div>
                     <a className="download" download="image.svg" href={URL.createObjectURL(new Blob([svg], {type:'image/svg+xml'}))}>download (blob)</a>  
                 </div>
+                <div>
+                    <div>open file: </div> 
+                    <input type="file" onChange={(e)=>{
+                        const file = e.target.files[0];
+                        if (file){
+                            const reader = new FileReader();
+                            reader.readAsText(file, 'utf-8');
+                            reader.onload = ()=>{
+                                if (typeof reader.result == 'string'){
+                                    setSvg(reader.result);
+                                } else  {
+                                    console.log('not loaded');
+                                }
+                            }
+                        }
+                    }}/>
+                </div>
                 
             </div> 
         </div>
