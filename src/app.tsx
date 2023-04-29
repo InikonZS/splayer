@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import {AppLegacy} from './lines';
+import {Incdec} from './components/incdec';
 
 export function App(){
     const [app, setApp] = useState<AppLegacy>(null);
@@ -10,6 +11,7 @@ export function App(){
     const scrollRef = useRef<HTMLDivElement>();
     const [svg, setSvg] = useState('');
     const [gridStep, setGridStep] = useState(8);
+    const [scale, setScale] = useState(2);
  
     useEffect(()=>{
         const applegacy = new AppLegacy(document, canvasRef.current, scrollRef.current);
@@ -20,79 +22,75 @@ export function App(){
         if (app){
             app.selTool(tool); 
             app.setGridStep(gridStep);
+            app.setScale(scale);
             app.render();
         }
-    }, [app, tool, gridStep]);
+    }, [app, tool, gridStep, scale]);
     return (
         <div className="wrapper clearfix">
         <div className="toolbar">
         </div>
         <div className="sidebar">
-                <div className={"sidebar_item" + (tool==0 ? " selected": "")} id="tool0" onClick={()=>{setTool(0);}}>
+                <button className={"sidebar_item" + (tool==0 ? " selected": "")} id="tool0" onClick={()=>{setTool(0);}}>
                     select
-                </div>
-                <div className={"sidebar_item" + (tool==1 ? " selected": "")} id="tool1" onClick={()=>{setTool(1)}}>
+                </button>
+                <button className={"sidebar_item" + (tool==1 ? " selected": "")} id="tool1" onClick={()=>{setTool(1)}}>
                     spline
-                </div>
-                <div className="sidebar_item" id="" onClick={()=>{app.board.groupe()}}>
+                </button>
+                <button className="sidebar_item" id="" onClick={()=>{app.board.groupe()}}>
                     group
-                </div>
-                <div className="sidebar_item" id="" onClick={()=>{app.board.unGroupe()}}>
+                </button>
+                <button className="sidebar_item" id="" onClick={()=>{app.board.unGroupe()}}>
                     ungroup
-                </div>
-                <div className="sidebar_item" id="" onClick={()=>{setBase(last=>[...last, last.length.toString()]); app.base.add('model',app.selection.dublicate()); app.render();}}>
+                </button>
+                <button className="sidebar_item" id="" onClick={()=>{setBase(last=>[...last, last.length.toString()]); app.base.add('model',app.selection.dublicate()); app.render();}}>
                     to base
-                </div>
+                </button>
                 <div className="sidebar_item" id="" onClick={()=>{
                     //app.base.select(' + i + ')
                     if (baseSelected!=-1){app.board.entries.push(app.base.items[baseSelected].model.dublicate()); app.render();}
                     }}>
                     from base
                 </div>
-                <div className="sidebar_item clearfix" id="" >
-                    <div className="sidebar_item_s" onMouseDown={()=>{"md()"}} onMouseMove={()=>{"mv()"}} id="" >
-                    -    
-                    </div> 
-                    <div className="sidebar_item_s"  id="wid" >
-                            w    
-                    </div>    
-                    <div className="sidebar_item_s"  id="" >
-                    +    
-                    </div>       
-                </div>
-                <div className="sidebar_item clearfix" id="" >
-                    <div className="sidebar_item_name">gridStep</div>
-                    <div className="sidebar_item_controls">
-                        <button className="sidebar_item_button" onClick={()=>{setGridStep(last => last / 2)}} >
-                        -    
-                        </button> 
-                        <div className="sidebar_item_value" >
-                            {gridStep}    
-                        </div>    
-                        <button className="sidebar_item_button" onClick={()=>{setGridStep(last => last * 2)}} >
-                        +    
-                        </button>      
-                    </div>
- 
-                </div>
-                <div className="sidebar_item" id="" onClick={()=>{app.setScale(app.scale*2)}}>
-                    zoom+
-                </div>
-                <div className="sidebar_item" id="" onClick={()=>{app.setScale(app.scale/2)}}>
-                    zoom-
-                </div>
-                <div onClick={()=>{
+
+                <Incdec 
+                    caption="grid"
+                    value={gridStep} 
+                    onInc={last => {
+                        const val = Math.min(last * 2, 64);
+                        setGridStep(val); 
+                    }} 
+                    onDec={last => {
+                        const val = Math.max(last / 2, 1);
+                        setGridStep(val); 
+                    }}
+                />
+                <Incdec 
+                    caption="zoom"
+                    value={scale} 
+                    onInc={last => {
+                        const val = Math.min(last * 2, 4);
+                        setScale(val);
+                    }} 
+                    onDec={last => {
+                        const val = Math.max(last / 2, 1);
+                        setScale(val);
+                    }}
+                />
+
+                <button className="sidebar_item" onClick={()=>{
                     const res = app.getSvg();
                     console.log(res);
                     setSvg(res);
                 }}>
                     save svg
-                </div>
-                <div onClick={()=>{
+                </button>
+
+                <button className="sidebar_item" onClick={()=>{
                     const res = app.setSvg(svg);
                 }}>
                     load svg
-                </div>
+                </button>
         </div>
         <div ref={scrollRef} className="main">
             <canvas ref={canvasRef} width="800px" height="700px" id="wnd" onContextMenu={(e)=>{e.preventDefault()}}></canvas> 

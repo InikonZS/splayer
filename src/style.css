@@ -30,6 +30,13 @@ body{
 
 .sidebar_item {
     padding: 10px;
+    border: none;
+    margin: 5px 0;
+    background-color: #222;
+    color: #fff;
+    display: block;
+    width: 100%;
+    text-align: left;
 }
 
 .selected {
