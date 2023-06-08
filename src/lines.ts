@@ -10,6 +10,7 @@ var app;*/
 import { downloadImage, getSel, getSelMark, inBox, roundToStep } from "./utils";
 import { Vertex } from './core/vertex';
 import { Spline } from './core/spline';
+import { LinearSpline } from './core/qSpline';
 import { Group } from './core/group';
 import { Cursor } from './core/cursor';
 import { Grid } from './core/grid';
@@ -117,7 +118,7 @@ function onDown(app: AppLegacy, e:MouseEvent) {
                 app.ghostSpline.pad = true;
                 app.board.entries.push(app.ghostSpline);
             }
-            app.ghostSpline = new Spline(app.ctx);
+            app.ghostSpline = new LinearSpline(app.ctx);
             app.ghostSpline.ghostPoint.setPosition(app.cursor.gridPosition.x, app.cursor.gridPosition.y);
 
 
@@ -245,7 +246,7 @@ export class AppLegacy {
         this.selectionPoints = [];
         this.board = new Group(this.ctx);
         this.board.main = true;
-        this.ghostSpline = new Spline(this.ctx);
+        this.ghostSpline = new LinearSpline(this.ctx);
         this.grid = new Grid(this.ctx, 8);
         this.cursor = new Cursor(this.ctx);
         this.scale = 2;

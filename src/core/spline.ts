@@ -220,7 +220,7 @@ export class Spline {
         return res;
     }
 
-    render(sc: number, gh: boolean, hover: boolean, selected: boolean, noMark: boolean, cursor: Cursor, step: number) {
+    render(sc: number, ghost: boolean, hover: boolean, selected: boolean, noMark: boolean, cursor: Cursor, step: number) {
         //this.getMidles();
         this.ctx.lineJoin = "round";
         this.ctx.lineCap = "round";
@@ -275,7 +275,7 @@ export class Spline {
                       a.render(this.ctx,sc);}
               }*/
         }
-        if (gh) {
+        if (ghost) {
             if (this.points.length > 0) {
                 // let lx=this.points[this.points.length-1].x*sc;
                 //let ly=this.points[this.points.length-1].y*sc;
