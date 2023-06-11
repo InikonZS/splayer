@@ -1,4 +1,5 @@
 import { Cursor } from "./cursor";
+import { LinearSpline } from "./qSpline";
 import { Spline } from "./spline";
 import { Vertex } from "./vertex";
 
@@ -154,6 +155,14 @@ export class Group {
         this.entries.forEach((it) => {
             if ((it instanceof Spline) && (it.type == "spline") ) {
                 it.points.forEach((jt) => {
+                    jt.selected = jt.hover;
+                    if (jt.selected) {
+                        //this.selectionPoints.push(jt); 
+                        this.selPoints.points.push(jt)
+                    };
+                });
+
+                (it as LinearSpline)?.qPoints?.forEach((jt) => {
                     jt.selected = jt.hover;
                     if (jt.selected) {
                         //this.selectionPoints.push(jt); 

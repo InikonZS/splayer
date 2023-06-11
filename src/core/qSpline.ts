@@ -1,4 +1,4 @@
-import { roundToStep } from '../utils';
+import { getSelMark, inBox, roundToStep } from '../utils';
 import { Cursor } from './cursor';
 import {Spline} from './spline';
 import { Vertex } from './vertex';
@@ -91,5 +91,78 @@ export class LinearSpline extends Spline{
 
         this.selected = sll;
         this.ctx.lineWidth = 1;
+    }
+
+    isPointHover(sc: number, cursor: Cursor) { // возвращаем первую точку под курсором
+        let x = cursor.realPosition.x;
+        let y = cursor.realPosition.y;
+        for (let i = 0; i < this.points.length; i++) {
+            let px = this.points[i].x;
+            let py = this.points[i].y;
+            if (getSelMark(px, py, x, y, sc)) { return this.points[i] };
+        }
+
+        for (let i = 0; i < this.qPoints.length; i++) {
+            let px = this.qPoints[i].x;
+            let py = this.qPoints[i].y;
+            if (getSelMark(px, py, x, y, sc)) { return this.qPoints[i] };
+        }
+        return null;
+    }
+
+    wasPointHover(sc: number, cursor: Cursor) { // возвращаем первую точку до перемещения под курсором
+        let x = cursor.startPos.x;
+        let y = cursor.startPos.y;
+        for (let i = 0; i < this.points.length; i++) {
+            let px = this.points[i].x;
+            let py = this.points[i].y;
+            if (getSelMark(px, py, x, y, sc)) { return this.points[i] };
+        }
+        for (let i = 0; i < this.qPoints.length; i++) {
+            let px = this.qPoints[i].x;
+            let py = this.qPoints[i].y;
+            if (getSelMark(px, py, x, y, sc)) { return this.qPoints[i] };
+        }
+        return false;
+    }
+
+    _selectMarker(points:Array<Vertex>, sc: number, cursor: Cursor) {
+        this.hovered = [];
+        for (let i = 0; i < points.length; i++) {
+            let px = points[i].x;
+            let py = points[i].y;
+            let x = cursor.realPosition.x;
+            let y = cursor.realPosition.y;
+            let xx = cursor.startPos.x;
+            let yy = cursor.startPos.y;
+            let hov = getSelMark(px, py, x, y, sc) || (inBox(x, y, xx, yy, px, py, sc) && cursor.cloud);
+            points[i].hover = hov;
+            if (hov) { this.hovered.push(points[i]); }
+        }
+    }
+
+    selectMarker(sc: number, cursor: Cursor): void {
+        this._selectMarker(this.qPoints, sc, cursor);
+        this._selectMarker(this.points, sc, cursor);
+    }
+
+    move(cursor: Cursor) {
+        this.points.forEach((it) => {
+            it.move(cursor)
+        });
+
+        this.qPoints.forEach((it) => {
+            it.move(cursor)
+        });
+    }
+
+    applyMove(step: number) {
+        this.points.forEach((it) => {
+            it.applyMove(step)
+        });
+
+        this.qPoints.forEach((it) => {
+            it.applyMove(step)
+        });
     }
 }
